@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "EnemyAIController.generated.h"
 
+struct FAIStimulus;
 /**
  * 
  */
@@ -22,12 +23,24 @@ protected:
 	/** Called when the game starts or when spawned. */
 	virtual void BeginPlay() override;
 
+	virtual void OnPossess(APawn* InPawn) override;
+	
 public:
 	/** Run every frame. */
 	virtual void Tick(float DeltaTime) override;
 
+	UFUNCTION()
+	void OnTargetDetected(AActor* Actor, FAIStimulus const stimulus);
+	
 private:
+	
 	UPROPERTY(EditAnywhere)
 	UBehaviorTree* AIBehavior;
+
+	UPROPERTY(EditAnywhere)
+	UAIPerceptionComponent* perceptionComp;
+
+	UPROPERTY(EditAnywhere)
+	class UAISenseConfig_Sight* sightConfig;
 	
 };
