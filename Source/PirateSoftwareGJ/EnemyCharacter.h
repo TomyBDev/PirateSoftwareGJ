@@ -22,5 +22,11 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
+	TMap<class APatrolPointActor*, float> GetPatrolPath() const {return patrolPath;}
 
+private:
+	
+	UPROPERTY(EditAnywhere)
+	TMap<class APatrolPointActor*, float> patrolPath;
 };
