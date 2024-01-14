@@ -18,12 +18,5 @@ public:
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* nodeMemory) override;
-
-private:
-
-	void WaitDone();
 	
-	FTimerHandle waitTH;
-
-	int index = 0;
 };

@@ -19,21 +19,22 @@ EBTNodeResult::Type UBTTask_Patrol::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	Super::ExecuteTask(OwnerComp, nodeMemory);
 
 	AEnemyCharacter* enemyChar = Cast<AEnemyCharacter>(OwnerComp.GetAIOwner()->GetPawn());
+	if (!IsValid(enemyChar))
+		return EBTNodeResult::Failed;
 
-	TMap<class APatrolPointActor*, float> patrolPoints = enemyChar->GetPatrolPath();
+	TMap<APatrolPointActor*, float> patrolPoints = enemyChar->GetPatrolPath();
 
-	if (patrolPoints.Num() >= index)
-		return EBTNodeResult::Succeeded;
-	
-		OwnerComp.GetAIOwner()->MoveToLocation(patrolPoint.Key->GetActorLocation());
+	int index = OwnerComp.GetBlackboardComponent()->GetValueAsInt(FName("PatrolIndex"));
 
-		GetWorld()->GetTimerManager().SetTimer(waitTH, this, &UBTTask_Patrol::WaitDone, patrolPoint.Value);
-	
-	
-	
-}
+	if (patrolPoints.Num() <= index)
+	{
+		index=0;
+		OwnerComp.GetBlackboardComponent()->SetValueAsInt(FName("PatrolIndex"), 0);
+	}
 
-void UBTTask_Patrol::WaitDone()
-{
-	
+	OwnerComp.GetBlackboardComponent()->SetValueAsVector(FName("PatrolLoc"), patrolPoints.Array()[index].Key->GetActorLocation());
+	OwnerComp.GetBlackboardComponent()->SetValueAsFloat(FName("WaitTime"), patrolPoints.Array()[index].Value);
+	OwnerComp.GetBlackboardComponent()->SetValueAsInt(FName("PatrolIndex"), index+1);
+
+	return EBTNodeResult::Succeeded;
 }
