@@ -26,7 +26,13 @@ public:
 	TMap<class APatrolPointActor*, float> GetPatrolPath() const {return patrolPath;}
 
 private:
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
+	class UCameraComponent* cameraComp;
 	
 	UPROPERTY(EditAnywhere)
 	TMap<class APatrolPointActor*, float> patrolPath;
+
+	UPROPERTY(BlueprintReadOnly, meta=(AllowPrivateAccess = "true"))
+	FMatrix viewProjMatrix;
 };
