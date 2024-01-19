@@ -24,6 +24,9 @@ EBTNodeResult::Type UBTTask_Patrol::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 	TMap<APatrolPointActor*, float> patrolPoints = enemyChar->GetPatrolPath();
 
+	if (patrolPoints.IsEmpty())
+		return EBTNodeResult::Failed;
+
 	int index = OwnerComp.GetBlackboardComponent()->GetValueAsInt(FName("PatrolIndex"));
 
 	if (patrolPoints.Num() <= index)

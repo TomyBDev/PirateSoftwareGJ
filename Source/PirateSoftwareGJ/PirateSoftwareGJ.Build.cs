@@ -8,7 +8,7 @@ public class PirateSoftwareGJ : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "EnhancedInput", "AIModule", "NavigationSystem" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "EnhancedInput", "AIModule", "NavigationSystem", "RealtimeMeshComponent" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
