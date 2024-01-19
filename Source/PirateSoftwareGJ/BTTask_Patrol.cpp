@@ -38,6 +38,7 @@ EBTNodeResult::Type UBTTask_Patrol::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 	OwnerComp.GetBlackboardComponent()->SetValueAsVector(FName("PatrolLoc"), patrolPoints.Array()[index].Key->GetActorLocation());
 	OwnerComp.GetBlackboardComponent()->SetValueAsFloat(FName("WaitTime"), patrolPoints.Array()[index].Value);
 	OwnerComp.GetBlackboardComponent()->SetValueAsInt(FName("PatrolIndex"), index+1);
+	OwnerComp.GetBlackboardComponent()->SetValueAsVector(FName("PatrolFaceLoc"), patrolPoints.Array()[index].Key->GetActorRotation().Vector());
 
 	return EBTNodeResult::Succeeded;
 }
