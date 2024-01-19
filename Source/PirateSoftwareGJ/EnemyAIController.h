@@ -31,6 +31,10 @@ public:
 
 	UFUNCTION()
 	void OnTargetDetected(AActor* Actor, FAIStimulus const stimulus);
+
+	void SetPerceptionRange(float range);
+
+	void SetPerceptionAngle(float angle);
 	
 private:
 	
