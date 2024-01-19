@@ -42,8 +42,6 @@ AEnemyCharacter::AEnemyCharacter()
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-
-	GetPoints();
 	
 	// Initialize the simple mesh
 	URealtimeMeshSimple* RealtimeMesh = realtimeMeshComponent->InitializeRealtimeMesh<URealtimeMeshSimple>();
@@ -59,7 +57,7 @@ void AEnemyCharacter::BeginPlay()
 		FRealtimeMeshSimpleMeshData MeshData;
 
 		// This just adds a simple box, you can instead create your own mesh data
-		AppendTriangleMesh(MeshData, 1);
+		AppendTriangleMesh(MeshData, GetPoints(), 1);
 
 		// Create a single section, with its own dedicated section group
 
@@ -97,7 +95,7 @@ TArray<FVector> AEnemyCharacter::GetPoints()
 	const float angSegment = angle / resolution;
 	float ang = -angle / 2.f;
 
-	points.Add(startLoc);
+	points.Add({0,0,0});
 
 	for (int i = 0; i < resolution; ++i)
 	{
@@ -107,13 +105,13 @@ TArray<FVector> AEnemyCharacter::GetPoints()
 
 		if (hit.bBlockingHit)
 		{
-			points.Add(hit.Location);
-			DrawDebugSphere(GetWorld(), hit.Location, 10.f, 10, FColor::Green);
+			points.Add(hit.Location - startLoc);
+			DrawDebugSphere(GetWorld(), hit.Location, 10.f, 10, FColor::Green, true);
 		}
 		else
 		{
-			points.Add(endLoc);
-			DrawDebugSphere(GetWorld(), endLoc, 10.f, 10, FColor::Red);
+			points.Add(endLoc - startLoc);
+			DrawDebugSphere(GetWorld(), endLoc, 10.f, 10, FColor::Red, true);
 		}
 		
 		ang += angSegment;
@@ -126,20 +124,20 @@ FRealtimeMeshSectionConfig AEnemyCharacter::OnAddSectionToPolyGroup(int32 PolyGr
 	return FRealtimeMeshSectionConfig(ERealtimeMeshSectionDrawType::Static, PolyGroupIndex);
 }
 
-void AEnemyCharacter::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, int32 NewMaterialGroup)
+void AEnemyCharacter::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, TArray<FVector> Points, int32 NewMaterialGroup)
 {
 	// Generate verts
-	FVector BoxVerts[3];
-	BoxVerts[0] = FTransform::Identity.TransformPosition(FVector(25.f, 0.f, 0.f));
-	BoxVerts[1] = FTransform::Identity.TransformPosition(FVector(-25.f, 0.f, 0.f));
-	BoxVerts[2] = FTransform::Identity.TransformPosition(FVector(0.f, 50.f, 0.f));
+	TArray<FVector> BoxVerts;
 
-
+	for (FVector p : Points)
+	{
+		BoxVerts.Add(FTransform::Identity.TransformPosition(p));
+	}
 
 	// Generate triangles (from quads)
 	const int32 StartVertex = MeshData.Positions.Num();
-	constexpr int32 NumVerts = 3; // 1 faces x 3 verts per face
-	constexpr int32 NumIndices = 3;
+	const int32 NumVerts = Points.Num(); 
+	const int32 NumIndices = (Points.Num()-2) * 3;
 
 	// Make sure the secondary arrays are the same length, zeroing them if necessary
 	MeshData.Normals.SetNumZeroed(StartVertex);
@@ -155,7 +153,7 @@ void AEnemyCharacter::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, 
 	if (NewMaterialGroup != INDEX_NONE)
 	{
 		const int32 NumExistingTriangles = (MeshData.Triangles.Num()) / 3;
-		constexpr int32 NumTrianglesToAdd = NumIndices / 3;
+		const int32 NumTrianglesToAdd = NumIndices / 3;
 		MeshData.MaterialIndex.Reserve(NumExistingTriangles + NumTrianglesToAdd);
 		MeshData.MaterialIndex.SetNumZeroed(NumExistingTriangles);
 	}
@@ -174,14 +172,20 @@ void AEnemyCharacter::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, 
 		MeshData.Positions.Add(VertC);
 	};
 
-	WriteTriPositions(BoxVerts[0], BoxVerts[1], BoxVerts[2]);
-	WriteToNextThree(MeshData.Normals, FTransform::Identity.TransformVectorNoScale(FVector(0.0f, 0.0f, 1.0f)));
-	WriteToNextThree(MeshData.Tangents, FTransform::Identity.TransformVectorNoScale(FVector(0.0f, -1.0f, 0.0f)));
-	ConvertToTriangles(MeshData.Triangles, MeshData.MaterialIndex, StartVertex + 0, StartVertex + 1, StartVertex + 2, NewMaterialGroup);
-
-
-	MeshData.UV0.Add(FVector2D(0.5f, 0.0f));
-	MeshData.UV0.Add(FVector2D(0.0f, 1.0f));
-	MeshData.UV0.Add(FVector2D(1.0f, 1.0f));
+	for (int i = 0; i < Points.Num()-2; ++i)
+	{
+		WriteTriPositions(BoxVerts[i+2], BoxVerts[i+1], BoxVerts[0]);
+		WriteToNextThree(MeshData.Normals, FTransform::Identity.TransformVectorNoScale(FVector(0.0f, 0.0f, 1.0f)));
+		WriteToNextThree(MeshData.Tangents, FTransform::Identity.TransformVectorNoScale(FVector(0.0f, -1.0f, 0.0f)));
+		ConvertToTriangles(MeshData.Triangles, MeshData.MaterialIndex, StartVertex + (i*3), StartVertex + (i*3) + 1, StartVertex + (i*3) + 2, NewMaterialGroup);
+	}
+	
+	
+	for (int32 Index = 0; Index < Points.Num()-2; Index++)
+	{
+		MeshData.UV0.Add(FVector2D(0.5f, 0.0f));
+		MeshData.UV0.Add(FVector2D(0.0f, 1.0f));
+		MeshData.UV0.Add(FVector2D(1.0f, 1.0f));
+	}
 }
 

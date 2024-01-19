@@ -31,7 +31,7 @@ private:
 
 	TArray<FVector> GetPoints();
 
-	void AppendTriangleMesh(struct FRealtimeMeshSimpleMeshData& MeshData, int32 NewMaterialGroup);
+	void AppendTriangleMesh(struct FRealtimeMeshSimpleMeshData& MeshData, TArray<FVector> Points, int32 NewMaterialGroup);
 	
 	struct FRealtimeMeshSectionConfig OnAddSectionToPolyGroup(int32 PolyGroupIndex);
 	
