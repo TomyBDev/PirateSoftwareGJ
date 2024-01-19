@@ -43,6 +43,9 @@ private:
 	TMap<class APatrolPointActor*, float> patrolPath;
 
 	UPROPERTY(EditAnywhere, Category="Vision Cone")
+	UMaterialInterface* visionConeMat;
+
+	UPROPERTY(EditAnywhere, Category="Vision Cone")
 	int resolution = 12;
 
 	UPROPERTY(EditAnywhere, Category="Vision Cone")

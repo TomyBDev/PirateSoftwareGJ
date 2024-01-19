@@ -26,11 +26,6 @@ EBTNodeResult::Type UBTTask_RotateToPatrol::ExecuteTask(UBehaviorTreeComponent& 
 	
 	int index = OwnerComp.GetBlackboardComponent()->GetValueAsInt(FName("PatrolIndex"))-1;
 
-
-	enemyChar->GetCharacterMovement()->RotationRate = {0,500, 0};
-	OwnerComp.GetAIOwner()->MoveToLocation(enemyChar->GetActorLocation() + patrolPoints.Array()[index].Key->GetActorRotation().Vector() * 75.f);
-	enemyChar->GetCharacterMovement()->RotationRate = {0,180, 0};
-
 	
 	return EBTNodeResult::Succeeded;
 }

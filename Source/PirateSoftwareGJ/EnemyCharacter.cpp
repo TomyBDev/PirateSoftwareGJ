@@ -62,7 +62,11 @@ void AEnemyCharacter::BeginPlay()
 
 	// Setup the two material slots
 	RealtimeMesh->SetupMaterialSlot(0, "PrimaryMaterial");
-	RealtimeMesh->SetupMaterialSlot(1, "SecondaryMaterial");
+
+	if (IsValid(visionConeMat))
+	{
+		realtimeMeshComponent->SetMaterial(0, visionConeMat);
+	}
 
 	{	// Create a basic single section
 		
@@ -151,10 +155,12 @@ void AEnemyCharacter::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, 
 		BoxVerts.Add(FTransform::Identity.TransformPosition(p));
 	}
 
+	const int n = Points.Num() - 2;
+	
 	// Generate triangles (from quads)
 	const int32 StartVertex = MeshData.Positions.Num();
 	const int32 NumVerts = Points.Num(); 
-	const int32 NumIndices = (Points.Num()-2) * 3;
+	const int32 NumIndices = n * 3;
 
 	// Make sure the secondary arrays are the same length, zeroing them if necessary
 	MeshData.Normals.SetNumZeroed(StartVertex);
@@ -183,20 +189,15 @@ void AEnemyCharacter::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, 
 	MeshData.Normals.Add(FTransform::Identity.TransformVectorNoScale(FVector(0.0f, 0.0f, 1.0f)));
 	MeshData.Tangents.Add(FTransform::Identity.TransformVectorNoScale(FVector(0.0f, -1.0f, 0.0f)));
 
-	for (int i = 0; i < Points.Num() - 2; ++i)
+	for (int i = 0; i < n; ++i)
 	{
 		MeshData.Positions.Add(BoxVerts[i+2]);
 		MeshData.Normals.Add(FTransform::Identity.TransformVectorNoScale(FVector(0.0f, 0.0f, 1.0f)));
 		MeshData.Tangents.Add(FTransform::Identity.TransformVectorNoScale(FVector(0.0f, -1.0f, 0.0f)));
 		ConvertToTriangles(MeshData.Triangles, MeshData.MaterialIndex, StartVertex , StartVertex + i + 1, StartVertex + i + 2, NewMaterialGroup);
-	}
-	
-	
-	for (int32 Index = 0; Index < Points.Num()-2; Index++)
-	{
-		MeshData.UV0.Add(FVector2D(0.5f, 0.0f));
-		MeshData.UV0.Add(FVector2D(0.0f, 1.0f));
-		MeshData.UV0.Add(FVector2D(1.0f, 1.0f));
+		MeshData.UV0.Add(FVector2D((i+1)/static_cast<float>(n), 0.0f)); //2
+		MeshData.UV0.Add(FVector2D(i/static_cast<float>(n), 0.0f)); //1
+		MeshData.UV0.Add(FVector2D(0.5f, 1.0f)); //0
 	}
 }
 
