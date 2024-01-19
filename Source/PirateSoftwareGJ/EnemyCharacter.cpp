@@ -6,13 +6,17 @@
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "DrawDebugHelpers.h"
+#include "EnemyAIController.h"
 #include "RealtimeMeshComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "RealtimeMeshLibrary.h"
 #include "RealtimeMeshSimple.h"
+#include "ShaderPrintParameters.h"
 #include "Mesh/RealtimeMeshBasicShapeTools.h"
 #include "Mesh/RealtimeMeshBuilder.h"
 #include "Mesh/RealtimeMeshSimpleData.h"
+#include "Perception/AIPerceptionComponent.h"
+#include "Perception/AISense_Sight.h"
 
 static void ConvertToTriangles(TArray<int32>& Triangles, TArray<int32>& MaterialIndices, int32 Vert0, int32 Vert1, int32 Vert2, int32 NewMaterialGroup)
 {
@@ -42,6 +46,13 @@ AEnemyCharacter::AEnemyCharacter()
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
+
+	AEnemyAIController* ai = Cast<AEnemyAIController>(GetController());
+	if (IsValid(ai))
+	{
+		ai->SetPerceptionRange(distance);
+		ai->SetPerceptionAngle(angle/2.f);
+	}
 	
 	// Initialize the simple mesh
 	RealtimeMesh = realtimeMeshComponent->InitializeRealtimeMesh<URealtimeMeshSimple>();
