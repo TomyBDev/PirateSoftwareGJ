@@ -16,9 +16,9 @@
 
 static void ConvertToTriangles(TArray<int32>& Triangles, TArray<int32>& MaterialIndices, int32 Vert0, int32 Vert1, int32 Vert2, int32 NewMaterialGroup)
 {
-	Triangles.Add(Vert0);
-	Triangles.Add(Vert1);
 	Triangles.Add(Vert2);
+	Triangles.Add(Vert1);
+	Triangles.Add(Vert0);
 
 	if (NewMaterialGroup != INDEX_NONE)
 	{
@@ -58,7 +58,7 @@ void AEnemyCharacter::BeginPlay()
 
 		// This just adds a simple box, you can instead create your own mesh data
 		AppendTriangleMesh(MeshData, GetPoints(), 1);
-
+		
 		// Create a single section, with its own dedicated section group
 
 		const auto SectionGroupKey = FRealtimeMeshSectionGroupKey::Create(0, FName("TestTripleBox"));
@@ -79,8 +79,6 @@ void AEnemyCharacter::BeginPlay()
 void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	
 	
 }
 
@@ -158,26 +156,20 @@ void AEnemyCharacter::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, 
 		MeshData.MaterialIndex.SetNumZeroed(NumExistingTriangles);
 	}
 
-	const auto WriteToNextThree = [](TArray<FVector>& Array, const FVector& Value)
-	{
-		Array.Add(Value);
-		Array.Add(Value);
-		Array.Add(Value);
-	};
+	MeshData.Positions.Add(BoxVerts[0]);
+	MeshData.Normals.Add(FTransform::Identity.TransformVectorNoScale(FVector(0.0f, 0.0f, 1.0f)));
+	MeshData.Tangents.Add(FTransform::Identity.TransformVectorNoScale(FVector(0.0f, -1.0f, 0.0f)));
+	
+	MeshData.Positions.Add(BoxVerts[1]);
+	MeshData.Normals.Add(FTransform::Identity.TransformVectorNoScale(FVector(0.0f, 0.0f, 1.0f)));
+	MeshData.Tangents.Add(FTransform::Identity.TransformVectorNoScale(FVector(0.0f, -1.0f, 0.0f)));
 
-	const auto WriteTriPositions = [&MeshData](const FVector& VertA, const FVector& VertB, const FVector& VertC)
+	for (int i = 0; i < Points.Num() - 2; ++i)
 	{
-		MeshData.Positions.Add(VertA);
-		MeshData.Positions.Add(VertB);
-		MeshData.Positions.Add(VertC);
-	};
-
-	for (int i = 0; i < Points.Num()-2; ++i)
-	{
-		WriteTriPositions(BoxVerts[i+2], BoxVerts[i+1], BoxVerts[0]);
-		WriteToNextThree(MeshData.Normals, FTransform::Identity.TransformVectorNoScale(FVector(0.0f, 0.0f, 1.0f)));
-		WriteToNextThree(MeshData.Tangents, FTransform::Identity.TransformVectorNoScale(FVector(0.0f, -1.0f, 0.0f)));
-		ConvertToTriangles(MeshData.Triangles, MeshData.MaterialIndex, StartVertex + (i*3), StartVertex + (i*3) + 1, StartVertex + (i*3) + 2, NewMaterialGroup);
+		MeshData.Positions.Add(BoxVerts[i+2]);
+		MeshData.Normals.Add(FTransform::Identity.TransformVectorNoScale(FVector(0.0f, 0.0f, 1.0f)));
+		MeshData.Tangents.Add(FTransform::Identity.TransformVectorNoScale(FVector(0.0f, -1.0f, 0.0f)));
+		ConvertToTriangles(MeshData.Triangles, MeshData.MaterialIndex, StartVertex , StartVertex + i + 1, StartVertex + i + 2, NewMaterialGroup);
 	}
 	
 	
