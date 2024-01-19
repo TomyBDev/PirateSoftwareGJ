@@ -41,8 +41,11 @@ void ACustomPlayerController::SetupInputComponent()
 		//Stop Sprint
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ACustomPlayerController::StopSprint);
 		
-		//Jumping
+		//Attack1
 		EnhancedInputComponent->BindAction(Attack1Action, ETriggerEvent::Triggered, this, &ACustomPlayerController::Attack1);
+		
+		//Attack2
+		EnhancedInputComponent->BindAction(Attack2Action, ETriggerEvent::Triggered, this, &ACustomPlayerController::Attack2);
 	}
 }
 
