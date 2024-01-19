@@ -44,7 +44,7 @@ void AEnemyCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 	// Initialize the simple mesh
-	URealtimeMeshSimple* RealtimeMesh = realtimeMeshComponent->InitializeRealtimeMesh<URealtimeMeshSimple>();
+	RealtimeMesh = realtimeMeshComponent->InitializeRealtimeMesh<URealtimeMeshSimple>();
 	
 	// This example create 3 rectangular prisms, one on each axis, with 2 of them grouped in the same vertex buffers, but with different sections
 	// This allows for setting up separate materials even if sections share a single set of buffers
@@ -54,15 +54,15 @@ void AEnemyCharacter::BeginPlay()
 	RealtimeMesh->SetupMaterialSlot(1, "SecondaryMaterial");
 
 	{	// Create a basic single section
-		FRealtimeMeshSimpleMeshData MeshData;
+		
 
 		// This just adds a simple box, you can instead create your own mesh data
-		AppendTriangleMesh(MeshData, GetPoints(), 1);
+		AppendTriangleMesh(meshData, GetPoints(), 1);
 		
 		// Create a single section, with its own dedicated section group
 
-		const auto SectionGroupKey = FRealtimeMeshSectionGroupKey::Create(0, FName("TestTripleBox"));
-		RealtimeMesh->CreateSectionGroup(SectionGroupKey, MeshData);
+		SectionGroupKey = FRealtimeMeshSectionGroupKey::Create(0, FName("TestTripleBox"));
+		RealtimeMesh->CreateSectionGroup(SectionGroupKey, meshData);
 
 		auto SectionGroup = RealtimeMesh->GetMeshData()->GetSectionGroupAs<FRealtimeMeshSectionGroupSimple>(SectionGroupKey);
 		SectionGroup->SetPolyGroupSectionHandler(FRealtimeMeshPolyGroupConfigHandler::CreateUObject(this, &AEnemyCharacter::OnAddSectionToPolyGroup));
@@ -79,6 +79,15 @@ void AEnemyCharacter::BeginPlay()
 void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	TArray<FVector> points = GetPoints();
+
+	for (int i = 0; i < points.Num(); ++i)
+	{
+		meshData.Positions[i] = points[i];
+	}
+
+	RealtimeMesh->UpdateSectionGroup(SectionGroupKey, meshData);
 	
 }
 
@@ -103,13 +112,12 @@ TArray<FVector> AEnemyCharacter::GetPoints()
 
 		if (hit.bBlockingHit)
 		{
-			points.Add(hit.Location - startLoc);
-			DrawDebugSphere(GetWorld(), hit.Location, 10.f, 10, FColor::Green, true);
+			
+			points.Add(UKismetMathLibrary::InverseTransformLocation(GetActorTransform(),hit.Location));
 		}
 		else
 		{
-			points.Add(endLoc - startLoc);
-			DrawDebugSphere(GetWorld(), endLoc, 10.f, 10, FColor::Red, true);
+			points.Add(UKismetMathLibrary::InverseTransformLocation(GetActorTransform(),endLoc));
 		}
 		
 		ang += angSegment;

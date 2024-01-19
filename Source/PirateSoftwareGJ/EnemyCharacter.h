@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Mesh/RealtimeMeshSimpleData.h"
 #include "EnemyCharacter.generated.h"
 
 class URealtimeMeshComponent;
@@ -49,4 +50,10 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Vision Cone")
 	float angle = 45.f;
+
+	FRealtimeMeshSimpleMeshData meshData;
+	
+	FRealtimeMeshSectionGroupKey SectionGroupKey;
+
+	class URealtimeMeshSimple* RealtimeMesh;
 };
