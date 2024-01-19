@@ -76,3 +76,15 @@ void AEnemyAIController::OnTargetDetected(AActor* Actor, FAIStimulus const stimu
 	GetBlackboardComponent()->SetValueAsVector(TEXT("LastKnownLocation"), Actor->GetActorLocation());
 	GetBlackboardComponent()->ClearValue(TEXT("PlayerRef"));
 }
+
+void AEnemyAIController::SetPerceptionRange(float range)
+{
+	if (IsValid(sightConfig))
+		sightConfig->SightRadius = range;
+}
+
+void AEnemyAIController::SetPerceptionAngle(float angle)
+{
+	if (IsValid(sightConfig))
+		sightConfig->PeripheralVisionAngleDegrees = angle;
+}

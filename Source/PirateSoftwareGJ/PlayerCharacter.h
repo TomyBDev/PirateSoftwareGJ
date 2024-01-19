@@ -27,6 +27,16 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	class UStaminaComponent* GetStaminaComponent() const { return staminaComp; }
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void Ability1();
+
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void Ability2();
+
 protected:
 	virtual void Move_Implementation(const FInputActionValue& Value) override;
 
@@ -55,4 +65,8 @@ private:
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* camera;
+	
+	/** Stamina Component. */
+	UPROPERTY(EditAnywhere, Category = "Stamina Component", BlueprintGetter = GetStaminaComponent)
+	class UStaminaComponent* staminaComp;
 };
