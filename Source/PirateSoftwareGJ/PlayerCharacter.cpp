@@ -4,6 +4,7 @@
 #include "PlayerCharacter.h"
 
 #include "EnhancedInputSubsystems.h"
+#include "StaminaComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -38,6 +39,10 @@ APlayerCharacter::APlayerCharacter()
 	camera->SetupAttachment(sprintArm, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	camera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 	camera->SetRelativeRotation(FRotator(0.f, -50.f, 0.f));
+
+	/** Initilaise Stamina Component. */
+	staminaComp = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
+	AddOwnedComponent(staminaComp);
 
 	Tags.Add("Player");
 }
@@ -108,20 +113,12 @@ void APlayerCharacter::Jump_Implementation()
 
 void APlayerCharacter::StartSprint_Implementation()
 {
-	UCharacterMovementComponent* charMovementComponent = GetCharacterMovement();
-	if (IsValid(charMovementComponent))
-	{
-		charMovementComponent->MaxWalkSpeed = 600;
-	}
+	staminaComp->SetSprinting(true);
 }
 
 void APlayerCharacter::StopSprint_Implementation()
 {
-	UCharacterMovementComponent* charMovementComponent = GetCharacterMovement();
-	if (IsValid(charMovementComponent))
-	{
-		charMovementComponent->MaxWalkSpeed = 300;
-	}
+	staminaComp->SetSprinting(false);
 }
 
 void APlayerCharacter::Attack1_Implementation()
