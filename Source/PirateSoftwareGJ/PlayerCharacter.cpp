@@ -123,12 +123,12 @@ void APlayerCharacter::StopSprint_Implementation()
 
 void APlayerCharacter::Attack1_Implementation()
 {
-	
+	Ability1();
 }
 
 void APlayerCharacter::Attack2_Implementation()
 {
-	
+	Ability2();
 }
 
 void APlayerCharacter::Attack3_Implementation()

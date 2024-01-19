@@ -30,6 +30,12 @@ public:
 	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
 	class UStaminaComponent* GetStaminaComponent() const { return staminaComp; }
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void Ability1();
+
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void Ability2();
 
 protected:
 	virtual void Move_Implementation(const FInputActionValue& Value) override;
