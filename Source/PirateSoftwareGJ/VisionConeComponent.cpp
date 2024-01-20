@@ -38,14 +38,18 @@ void UVisionConeComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	
-	// ...
-	AEnemyAIController* ai = Cast<AEnemyAIController>(Cast<ACharacter>(GetOwner())->GetController());
-	if (IsValid(ai))
+	ACharacter* character = Cast<ACharacter>(GetOwner());
+	if (IsValid(character))
 	{
-		ai->SetPerceptionRange(distance);
-		ai->SetPerceptionAngle(angle/2.f);
+		// ...
+		AEnemyAIController* ai = Cast<AEnemyAIController>(character->GetController());
+		if (IsValid(ai))
+		{
+			ai->SetPerceptionRange(distance);
+			ai->SetPerceptionAngle(angle/2.f);
+		}
 	}
+
 	
 	// Initialize the simple mesh
 	RealtimeMesh = InitializeRealtimeMesh<URealtimeMeshSimple>();
@@ -105,11 +109,13 @@ void UVisionConeComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 TArray<FVector> UVisionConeComponent::GetPoints()
 {
 
+	UVisionConeComponent* visCone = GetOwner()->GetComponentByClass<UVisionConeComponent>();
+	
 	FHitResult hit;
 
 	TArray<FVector> points;
 
-	const FVector startLoc = GetOwner()->GetActorLocation();
+	const FVector startLoc = visCone->GetComponentLocation();
 	const float angSegment = angle / resolution;
 	float ang = -angle / 2.f;
 
@@ -117,18 +123,18 @@ TArray<FVector> UVisionConeComponent::GetPoints()
 
 	for (int i = 0; i < resolution; ++i)
 	{
-		FVector endLoc = startLoc + (UKismetMathLibrary::RotateAngleAxis(GetOwner()->GetActorForwardVector(), ang,
-			GetOwner()->GetActorUpVector()) * distance);
+		FVector endLoc = startLoc + (UKismetMathLibrary::RotateAngleAxis(visCone->GetForwardVector(), ang,
+			FVector(0,0,1)) * distance);
 
 		GetWorld()->LineTraceSingleByChannel(hit, startLoc, endLoc, ECC_Visibility);
 
 		if (hit.bBlockingHit)
 		{
-			points.Add(UKismetMathLibrary::InverseTransformLocation(GetOwner()->GetActorTransform(),hit.Location));
+			points.Add(UKismetMathLibrary::InverseTransformLocation(visCone->GetComponentTransform(),hit.Location));
 		}
 		else
 		{
-			points.Add(UKismetMathLibrary::InverseTransformLocation(GetOwner()->GetActorTransform(),endLoc));
+			points.Add(UKismetMathLibrary::InverseTransformLocation(visCone->GetComponentTransform(),endLoc));
 		}
 		
 		ang += angSegment;
