@@ -25,6 +25,8 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	void SetAlertState(int state);
+
 private:
 	
 	TArray<FVector> GetPoints();
@@ -35,6 +37,12 @@ private:
 	
 	UPROPERTY(EditAnywhere, Category="Vision Cone")
 	UMaterialInterface* visionConeMat;
+	
+	UPROPERTY(EditAnywhere, Category="Vision Cone")
+	UMaterialInterface* visionConeAlertMat;
+	
+	UPROPERTY(EditAnywhere, Category="Vision Cone")
+	UMaterialInterface* visionConeChaseMat;
 
 	UPROPERTY(EditAnywhere, Category="Vision Cone")
 	int resolution = 12;

@@ -105,6 +105,23 @@ void UVisionConeComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	RealtimeMesh->UpdateSectionGroup(SectionGroupKey, meshData);
 }
 
+void UVisionConeComponent::SetAlertState(int state)
+{
+	
+	if (IsValid(visionConeMat) && state == 0)
+	{
+		SetMaterial(0, visionConeMat);
+	}
+	else if (IsValid(visionConeAlertMat) && state == 1)
+	{
+		SetMaterial(0, visionConeAlertMat);
+	}
+	else if (IsValid(visionConeChaseMat) && state == 2)
+	{
+		SetMaterial(0, visionConeChaseMat);
+	}
+}
+
 
 TArray<FVector> UVisionConeComponent::GetPoints()
 {
