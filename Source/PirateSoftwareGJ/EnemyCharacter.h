@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Mesh/RealtimeMeshSimpleData.h"
 #include "EnemyCharacter.generated.h"
 
 class URealtimeMeshComponent;
@@ -26,37 +25,13 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 	
-	TMap<class APatrolPointActor*, float> GetPatrolPath() const {return patrolPath;}
+	TMap<class APatrolPointActor*, float> GetPatrolPath() const { return patrolPath; }
 
 private:
-
-	TArray<FVector> GetPoints();
-
-	void AppendTriangleMesh(struct FRealtimeMeshSimpleMeshData& MeshData, TArray<FVector> Points, int32 NewMaterialGroup);
-	
-	struct FRealtimeMeshSectionConfig OnAddSectionToPolyGroup(int32 PolyGroupIndex);
-	
-	UPROPERTY(EditAnywhere)
-	class URealtimeMeshComponent* realtimeMeshComponent;
 	
 	UPROPERTY(EditAnywhere)
 	TMap<class APatrolPointActor*, float> patrolPath;
 
-	UPROPERTY(EditAnywhere, Category="Vision Cone")
-	UMaterialInterface* visionConeMat;
-
-	UPROPERTY(EditAnywhere, Category="Vision Cone")
-	int resolution = 12;
-
-	UPROPERTY(EditAnywhere, Category="Vision Cone")
-	float distance = 200.f;
-
-	UPROPERTY(EditAnywhere, Category="Vision Cone")
-	float angle = 45.f;
-
-	FRealtimeMeshSimpleMeshData meshData;
-	
-	FRealtimeMeshSectionGroupKey SectionGroupKey;
-
-	class URealtimeMeshSimple* RealtimeMesh;
+	UPROPERTY(EditAnywhere)
+	class UVisionConeComponent* visionCone;
 };
