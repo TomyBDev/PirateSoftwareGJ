@@ -34,8 +34,7 @@ ASurveillanceCamera::ASurveillanceCamera()
 void ASurveillanceCamera::BeginPlay()
 {
 	Super::BeginPlay();
-
-	startRot = FRotator(0,-turnRange,0);
+	
 	targetRot = FRotator(0,turnRange,0);
 }
 
@@ -47,8 +46,16 @@ void ASurveillanceCamera::Tick(float DeltaTime)
 	if (bWaiting)
 		return;
 
-	if(cameraHead->GetRelativeRotation().Equals(targetRot, 1.f))
+	if(cameraHead->GetRelativeRotation().Yaw > turnRange )
 	{
+		cameraHead->SetRelativeRotation(FRotator(0,turnRange-1,0));
+		GetWorld()->GetTimerManager().SetTimer(turnCooldownTH, this, &ASurveillanceCamera::TurnCamera, turnCooldown, false);
+		bWaiting = true;
+		return;
+	}
+	if (cameraHead->GetRelativeRotation().Yaw < -turnRange)
+	{
+		cameraHead->SetRelativeRotation(FRotator(0,-turnRange+1,0));
 		GetWorld()->GetTimerManager().SetTimer(turnCooldownTH, this, &ASurveillanceCamera::TurnCamera, turnCooldown, false);
 		bWaiting = true;
 		return;
@@ -60,10 +67,6 @@ void ASurveillanceCamera::Tick(float DeltaTime)
 
 void ASurveillanceCamera::TurnCamera()
 {
-	/*FRotator temp = startRot;
-	startRot = targetRot;
-	targetRot = temp;*/
-
 	targetRot.Yaw *= -1;
 	bWaiting = false;
 }

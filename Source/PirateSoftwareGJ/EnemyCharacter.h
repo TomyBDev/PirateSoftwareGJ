@@ -27,11 +27,13 @@ public:
 	
 	TMap<class APatrolPointActor*, float> GetPatrolPath() const { return patrolPath; }
 
+	class UVisionConeComponent* GetVisionConeComponent() const { return visionCone; }
+
 private:
 	
 	UPROPERTY(EditAnywhere)
 	TMap<class APatrolPointActor*, float> patrolPath;
 
 	UPROPERTY(EditAnywhere)
-	class UVisionConeComponent* visionCone;
+	UVisionConeComponent* visionCone;
 };
