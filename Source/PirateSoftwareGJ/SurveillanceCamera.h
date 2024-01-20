@@ -26,6 +26,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 private:
+	UFUNCTION()
+	void TurnCamera();
 
 	UPROPERTY(EditAnywhere)
 	USceneComponent* rootComp;
@@ -41,4 +43,19 @@ private:
 	
 	UPROPERTY(EditAnywhere)
 	class UVisionConeComponent* visionCone;
+
+	UPROPERTY(EditAnywhere, Category="Camera Settings")
+	float turnRange = 65.f;
+
+	UPROPERTY(EditAnywhere, Category="Camera Settings")
+	float turnSpeed = 25.;
+
+	UPROPERTY(EditAnywhere, Category="Camera Settings")
+	float turnCooldown = 2.5f;
+
+	bool bWaiting = false;
+	
+	FTimerHandle turnCooldownTH;
+
+	FRotator targetRot, startRot;
 };
