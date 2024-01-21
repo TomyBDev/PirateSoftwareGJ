@@ -3,6 +3,7 @@
 
 #include "Door.h"
 
+#include "NavLinkComponent.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
@@ -16,6 +17,7 @@ ADoor::ADoor()
 
 	mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Skeletal Mesh Component"));
 	mesh->SetupAttachment(collisionBox);
+
 }
 
 // Called when the game starts or when spawned
@@ -38,5 +40,7 @@ void ADoor::OpenDoor()
 		mesh->PlayAnimation(closeAnim, false);
 
 	collisionBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	collisionBox->SetCanEverAffectNavigation(false);
+	
 }
 
