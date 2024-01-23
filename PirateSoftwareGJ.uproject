@@ -11,7 +11,8 @@
 			"AdditionalDependencies": [
 				"Engine",
 				"AIModule",
-				"RealtimeMeshComponent"
+				"RealtimeMeshComponent",
+				"UMG"
 			]
 		}
 	],

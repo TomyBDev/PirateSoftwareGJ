@@ -106,7 +106,7 @@ void APlayerCharacter::Look_Implementation(const FInputActionValue& Value)
 	AddControllerYawInput(LookAxisVector.X);
 
 	FRotator rot = GetController()->GetControlRotation();;
-	GetController()->SetControlRotation(FRotator(FMath::ClampAngle(FMath::UnwindDegrees(rot.Pitch), -30.f, 50.f), rot.Yaw, rot.Roll));
+	GetController()->SetControlRotation(FRotator(FMath::ClampAngle(FMath::UnwindDegrees(rot.Pitch), -30.f, 30.f), rot.Yaw, rot.Roll));
 	
 }
 
