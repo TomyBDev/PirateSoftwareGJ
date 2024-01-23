@@ -3,19 +3,22 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "InteractableActor.h"
-#include "SurveillanceCamera.generated.h"
+#include "InteractionInterface.h"
+#include "GameFramework/Actor.h"
+#include "InteractableActor.generated.h"
 
-class UArrowComponent;
+#define COLLISION_INTERACTION ECC_GameTraceChannel1
+
+class UBoxComponent;
 
 UCLASS()
-class PIRATESOFTWAREGJ_API ASurveillanceCamera : public AInteractableActor
+class PIRATESOFTWAREGJ_API AInteractableActor : public AActor, public IInteractionInterface
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ASurveillanceCamera();
+	AInteractableActor();
 
 protected:
 	// Called when the game starts or when spawned
@@ -41,34 +44,25 @@ protected:
 	/** Lookat End */
 	virtual bool LookatEnd_Implementation() override;
 
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* mesh;
+
+	class UInteractWidget* interactionWidget;
+	
+	bool bLockInteraction = false;
+	
 private:
-	UFUNCTION()
-	void TurnCamera();
 
-	void HackOver();
+	void IncrementPercent();
 
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* cameraHead;
-	
+	USceneComponent* rootComp;
+
 	UPROPERTY(EditAnywhere)
-	class UVisionConeComponent* visionCone;
+	UBoxComponent* interactionCollider;
 
-	UPROPERTY(EditAnywhere, Category="Camera Settings")
-	float turnRange = 65.f;
+	UPROPERTY(EditAnywhere)
+	class UWidgetComponent* interactWidget;
 
-	UPROPERTY(EditAnywhere, Category="Camera Settings")
-	float turnSpeed = 25.;
-
-	UPROPERTY(EditAnywhere, Category="Camera Settings")
-	float turnCooldown = 2.5f;
-
-	bool bWaiting = false;
-	
-	FTimerHandle turnCooldownTH;
-
-	FRotator targetRot, startRot;
-
-	FTimerHandle disabledTH;
-
-	float disabledTime = 5.f;
+	FTimerHandle incrementTH;
 };

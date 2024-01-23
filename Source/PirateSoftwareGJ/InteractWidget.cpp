@@ -22,9 +22,19 @@ void UInteractWidget::NativeOnInitialized()
 		GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Green, TEXT("srnetisrntiersatneiartinear starstarstrsw!"));
 }
 
-void UInteractWidget::SetPercentage(float per)
+void UInteractWidget::IncrementPercentage(float per)
 {
-	dynamicRoundProgressMat->SetScalarParameterValue("Percentage", per);
+	percentage += per;
+	dynamicRoundProgressMat->SetScalarParameterValue("Percentage", percentage);
+
+	if (percentage>=1.f)
+		SetComplete(true);
+}
+
+void UInteractWidget::ZeroPercentage()
+{
+	percentage = 0.f;
+	dynamicRoundProgressMat->SetScalarParameterValue("Percentage", percentage);
 }
 
 void UInteractWidget::SetComplete(bool bComplete)

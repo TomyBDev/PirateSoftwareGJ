@@ -24,7 +24,11 @@ public:
 
 	void NativeOnInitialized() override;
 
-	void SetPercentage(float per);
+	void IncrementPercentage(float per);
+
+	void ZeroPercentage();
+
+	float GetPercentage() const { return percentage; }
 
 	void SetComplete(bool bComplete);
 
@@ -51,5 +55,6 @@ private:
 	UMaterialInterface* roundProgressMat;
 
 	UMaterialInstanceDynamic* dynamicRoundProgressMat;
-	
+
+	float percentage = 0;
 };

@@ -16,26 +16,26 @@ public:
 
 	/** Begin Interaction */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void BeginInteraction();
-	virtual void BeginInteraction_Implementation() {};
+	bool BeginInteraction();
+	virtual bool BeginInteraction_Implementation() { return false; };
 
 	/** End Interaction */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void EndInteraction();
-	virtual void EndInteraction_Implementation() {};
+	bool EndInteraction();
+	virtual bool EndInteraction_Implementation() { return false; };
 
 	/** Interaction Cancelled */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void InteractionCancelled();
-	virtual void InteractionCancelled_Implementation() {};
+	bool InteractionCancelled();
+	virtual bool InteractionCancelled_Implementation() { return false; };
 
 	/** Lookat Begin */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void LookatBegin();
-	virtual void LookatBegin_Implementation() {};
+	bool LookatBegin();
+	virtual bool LookatBegin_Implementation() { return false; };
 
 	/** Lookat End */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void LookatEnd();
-	virtual void LookatEnd_Implementation() {};
+	bool LookatEnd();
+	virtual bool LookatEnd_Implementation() { return false; };
 };
