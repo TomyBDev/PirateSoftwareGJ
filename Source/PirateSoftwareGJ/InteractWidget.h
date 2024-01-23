@@ -42,6 +42,9 @@ private:
 	UImage* tickImage;
 
 	UPROPERTY(meta=(BindWidget))
+	UImage* backgroundImage;
+
+	UPROPERTY(meta=(BindWidget))
 	UTextBlock* text;
 
 	UPROPERTY(EditAnywhere)
