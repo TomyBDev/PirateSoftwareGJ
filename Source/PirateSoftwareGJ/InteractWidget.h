@@ -24,7 +24,11 @@ public:
 
 	void NativeOnInitialized() override;
 
-	void SetPercentage(float per);
+	void IncrementPercentage(float per);
+
+	void ZeroPercentage();
+
+	float GetPercentage() const { return percentage; }
 
 	void SetComplete(bool bComplete);
 
@@ -42,11 +46,15 @@ private:
 	UImage* tickImage;
 
 	UPROPERTY(meta=(BindWidget))
+	UImage* backgroundImage;
+
+	UPROPERTY(meta=(BindWidget))
 	UTextBlock* text;
 
 	UPROPERTY(EditAnywhere)
 	UMaterialInterface* roundProgressMat;
 
 	UMaterialInstanceDynamic* dynamicRoundProgressMat;
-	
+
+	float percentage = 0;
 };
