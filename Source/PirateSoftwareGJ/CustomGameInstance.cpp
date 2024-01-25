@@ -17,8 +17,6 @@ void UCustomGameInstance::Init()
 	
 	// Load Save
 	LoadGameData();
-
-	menuPlayerController = Cast<AMenuPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 }
 
 void UCustomGameInstance::SaveGameData(FPlayerStats pStats, FGraphicsSettingsStruct graphics, FGameplaySettingsStruct gameplay, FAudioSettingsStruct audio)
@@ -38,11 +36,11 @@ void UCustomGameInstance::SaveGameData(FPlayerStats pStats, FGraphicsSettingsStr
 
 		// Start async save process.
 		UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, FString("MainSaveSlot"), 0, SavedDelegate);
-
 		
-		if (IsValid(menuPlayerController))
-			menuPlayerController->AddSaveWidget();
 	}
+
+	if (IsValid(menuPlayerController))
+		menuPlayerController->AddSaveWidget();
 }
 
 void UCustomGameInstance::SaveComplete_Delegate(const FString& slotName, const int32 userIndex, bool bSuccess)
@@ -61,9 +59,6 @@ void UCustomGameInstance::LoadGameData()
 	LoadedDelegate.BindUObject(this, &UCustomGameInstance::LoadComplete_Delegate);
 	UGameplayStatics::AsyncLoadGameFromSlot(FString("MainSaveSlot"), 0, LoadedDelegate);
 
-	if (IsValid(menuPlayerController))
-		menuPlayerController->AddSaveWidget();
-
 	bHasLoaded = true;
 }
 
@@ -77,9 +72,6 @@ void UCustomGameInstance::LoadComplete_Delegate(const FString& SlotName, const i
 	graphicsSettings = customSaveGame->graphicsSettings;
 	gameplaySettings = customSaveGame->gameplaySettings;
 	audioSettings = customSaveGame->audioSettings;
-
-	if (IsValid(menuPlayerController))
-		menuPlayerController->RemoveSaveWidget();
 	
 	if(GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Ability 1 level: %i, Ability 2 level: %i, Passive level: %i, "), playerStats.Ability1Level, playerStats.Ability2Level,playerStats.PassiveLevel));
