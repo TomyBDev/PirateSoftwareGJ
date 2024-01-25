@@ -40,7 +40,7 @@ protected:
 
 	/** Lookat End */
 	virtual bool LookatEnd_Implementation() override;
-
+	
 private:
 	UFUNCTION()
 	void TurnCamera();

@@ -18,10 +18,6 @@ class PIRATESOFTWAREGJ_API UInteractWidget : public UUserWidget
 {
 	GENERATED_BODY()
 public:
-	//TSharedRef<SWidget> RebuildWidget() override;
-	
-	//virtual void NativeConstruct() override;
-
 	void NativeOnInitialized() override;
 
 	void IncrementPercentage(float per);
