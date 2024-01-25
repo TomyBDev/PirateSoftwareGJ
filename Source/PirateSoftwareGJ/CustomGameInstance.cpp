@@ -14,11 +14,11 @@ UCustomGameInstance::UCustomGameInstance()
 void UCustomGameInstance::Init()
 {
 	Super::Init();
+
+	menuPlayerController = Cast<AMenuPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 	
 	// Load Save
 	LoadGameData();
-
-	menuPlayerController = Cast<AMenuPlayerController>(UGameplayStatics::GetPlayerController(GetWorld(), 0));
 }
 
 void UCustomGameInstance::SaveGameData(FPlayerStats pStats, FGraphicsSettingsStruct graphics, FGameplaySettingsStruct gameplay, FAudioSettingsStruct audio)
@@ -38,10 +38,15 @@ void UCustomGameInstance::SaveGameData(FPlayerStats pStats, FGraphicsSettingsStr
 
 		// Start async save process.
 		UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, FString("MainSaveSlot"), 0, SavedDelegate);
-
 		
-		if (IsValid(menuPlayerController))
-			menuPlayerController->AddSaveWidget();
+	}
+
+	if (IsValid(menuPlayerController))
+		menuPlayerController->AddSaveWidget();
+	else
+	{
+		if(GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("WHYWHY!"));	
 	}
 }
 
@@ -63,6 +68,11 @@ void UCustomGameInstance::LoadGameData()
 
 	if (IsValid(menuPlayerController))
 		menuPlayerController->AddSaveWidget();
+	else
+	{
+		if(GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("WHYWHY1!"));	
+	}
 
 	bHasLoaded = true;
 }
@@ -80,6 +90,11 @@ void UCustomGameInstance::LoadComplete_Delegate(const FString& SlotName, const i
 
 	if (IsValid(menuPlayerController))
 		menuPlayerController->RemoveSaveWidget();
+	else
+	{
+		if(GEngine)
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("WHYWHY2!"));	
+	}
 	
 	if(GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, FString::Printf(TEXT("Ability 1 level: %i, Ability 2 level: %i, Passive level: %i, "), playerStats.Ability1Level, playerStats.Ability2Level,playerStats.PassiveLevel));
