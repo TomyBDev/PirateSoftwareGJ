@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
 
+class URealtimeMeshComponent;
+
 UCLASS()
 class PIRATESOFTWAREGJ_API AEnemyCharacter : public ACharacter
 {
@@ -22,5 +24,16 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	
+	TMap<class APatrolPointActor*, float> GetPatrolPath() const { return patrolPath; }
 
+	class UVisionConeComponent* GetVisionConeComponent() const { return visionCone; }
+
+private:
+	
+	UPROPERTY(EditAnywhere)
+	TMap<class APatrolPointActor*, float> patrolPath;
+
+	UPROPERTY(EditAnywhere)
+	UVisionConeComponent* visionCone;
 };

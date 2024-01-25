@@ -4,6 +4,7 @@
 #include "PlayerCharacter.h"
 
 #include "EnhancedInputSubsystems.h"
+#include "StaminaComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -38,6 +39,15 @@ APlayerCharacter::APlayerCharacter()
 	camera->SetupAttachment(sprintArm, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	camera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 	camera->SetRelativeRotation(FRotator(0.f, -50.f, 0.f));
+
+	cube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Cubez"));
+	cube->SetupAttachment(RootComponent);
+
+	/** Initilaise Stamina Component. */
+	staminaComp = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
+	AddOwnedComponent(staminaComp);
+
+	Tags.Add("Player");
 }
 
 // Called when the game starts or when spawned
@@ -89,14 +99,18 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Value)
 void APlayerCharacter::Look_Implementation(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	/*FVector2D LookAxisVector = Value.Get<FVector2D>();
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
-	}*/
+	if (!IsValid(Controller))
+		return;
+
+	// add yaw and pitch input to controller
+	AddControllerPitchInput(LookAxisVector.Y);
+	AddControllerYawInput(LookAxisVector.X);
+
+	FRotator rot = GetController()->GetControlRotation();;
+	GetController()->SetControlRotation(FRotator(FMath::ClampAngle(FMath::UnwindDegrees(rot.Pitch), -30.f, 30.f), rot.Yaw, rot.Roll));
+	
 }
 
 void APlayerCharacter::Jump_Implementation()
@@ -106,30 +120,25 @@ void APlayerCharacter::Jump_Implementation()
 
 void APlayerCharacter::StartSprint_Implementation()
 {
-	UCharacterMovementComponent* charMovementComponent = GetCharacterMovement();
-	if (IsValid(charMovementComponent))
-	{
-		charMovementComponent->MaxWalkSpeed = 600;
-	}
+	staminaComp->SetSprinting(true);
 }
 
 void APlayerCharacter::StopSprint_Implementation()
 {
-	UCharacterMovementComponent* charMovementComponent = GetCharacterMovement();
-	if (IsValid(charMovementComponent))
-	{
-		charMovementComponent->MaxWalkSpeed = 300;
-	}
+	staminaComp->SetSprinting(false);
 }
 
 void APlayerCharacter::Attack1_Implementation()
 {
-	
+	cube->SetMaterial(0, translucentMat);
+	Tags.RemoveAt(0);
+	//ToDo: Fix AI detection of player round cloaking.
+	GetWorld()->GetTimerManager().SetTimer(cloakTH, this, &APlayerCharacter::EndCloak, cloakTime, false);
 }
 
 void APlayerCharacter::Attack2_Implementation()
 {
-	
+	Ability2();
 }
 
 void APlayerCharacter::Attack3_Implementation()
@@ -140,4 +149,11 @@ void APlayerCharacter::Attack3_Implementation()
 void APlayerCharacter::Interact_Implementation()
 {
 	
+}
+
+void APlayerCharacter::EndCloak()
+{
+	//ToDo: Fix AI detection of player round cloaking.
+	cube->SetMaterial(0, normalMat);
+	Tags.Add("Player");
 }
