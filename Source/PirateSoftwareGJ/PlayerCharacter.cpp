@@ -40,6 +40,9 @@ APlayerCharacter::APlayerCharacter()
 	camera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 	camera->SetRelativeRotation(FRotator(0.f, -50.f, 0.f));
 
+	cube = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Cubez"));
+	cube->SetupAttachment(RootComponent);
+
 	/** Initilaise Stamina Component. */
 	staminaComp = CreateDefaultSubobject<UStaminaComponent>(TEXT("Stamina Component"));
 	AddOwnedComponent(staminaComp);
@@ -96,14 +99,18 @@ void APlayerCharacter::Move_Implementation(const FInputActionValue& Value)
 void APlayerCharacter::Look_Implementation(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	/*FVector2D LookAxisVector = Value.Get<FVector2D>();
+	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
-	if (Controller != nullptr)
-	{
-		// add yaw and pitch input to controller
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
-	}*/
+	if (!IsValid(Controller))
+		return;
+
+	// add yaw and pitch input to controller
+	AddControllerPitchInput(LookAxisVector.Y);
+	AddControllerYawInput(LookAxisVector.X);
+
+	FRotator rot = GetController()->GetControlRotation();;
+	GetController()->SetControlRotation(FRotator(FMath::ClampAngle(FMath::UnwindDegrees(rot.Pitch), -30.f, 30.f), rot.Yaw, rot.Roll));
+	
 }
 
 void APlayerCharacter::Jump_Implementation()
@@ -123,7 +130,10 @@ void APlayerCharacter::StopSprint_Implementation()
 
 void APlayerCharacter::Attack1_Implementation()
 {
-	Ability1();
+	cube->SetMaterial(0, translucentMat);
+	Tags.RemoveAt(0);
+	//ToDo: Fix AI detection of player round cloaking.
+	GetWorld()->GetTimerManager().SetTimer(cloakTH, this, &APlayerCharacter::EndCloak, cloakTime, false);
 }
 
 void APlayerCharacter::Attack2_Implementation()
@@ -139,4 +149,11 @@ void APlayerCharacter::Attack3_Implementation()
 void APlayerCharacter::Interact_Implementation()
 {
 	
+}
+
+void APlayerCharacter::EndCloak()
+{
+	//ToDo: Fix AI detection of player round cloaking.
+	cube->SetMaterial(0, normalMat);
+	Tags.Add("Player");
 }
