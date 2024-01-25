@@ -4,6 +4,7 @@
 #include "MenuPlayerController.h"
 
 #include "CustomGameInstance.h"
+#include "SaveWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -21,8 +22,16 @@ void AMenuPlayerController::BeginPlay()
 		menuWidget->AddToViewport();
 
 	UCustomGameInstance* cgi = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
-	if (IsValid(cgi) && !cgi->GetHasLoaded())
+	if (IsValid(cgi))
+	{
 		AddSaveWidget();
+
+		if (cgi->GetHasLoaded())
+		{
+			if (IsValid(savingWidget))
+				savingWidget->OnComplete();
+		}
+	}
 }
 
 void AMenuPlayerController::SetupInputComponent()
@@ -47,7 +56,7 @@ void AMenuPlayerController::AddSaveWidget()
 	if (!IsValid(savingWidgetClass))
 		return;
 
-	savingWidget = CreateWidget(this, savingWidgetClass);
+	savingWidget = Cast<USaveWidget>(CreateWidget(this, savingWidgetClass));
 	
 	if (IsValid(savingWidget))
 		savingWidget->AddToViewport();
@@ -59,5 +68,5 @@ void AMenuPlayerController::RemoveSaveWidget()
 	if (!IsValid(savingWidget))
 		return;
 
-	savingWidget->RemoveFromParent();
+	savingWidget->OnComplete();
 }

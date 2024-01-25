@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "MenuPlayerController.generated.h"
 
+class USaveWidget;
 /**
  * 
  */
@@ -37,5 +38,5 @@ private:
 	TSubclassOf<UUserWidget> savingWidgetClass;
 
 	UPROPERTY()
-	UUserWidget* savingWidget;
+	USaveWidget* savingWidget;
 };

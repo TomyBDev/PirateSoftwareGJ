@@ -49,6 +49,7 @@ private:
 	UPROPERTY()
 	FAudioSettingsStruct audioSettings;
 
+	UPROPERTY()
 	AMenuPlayerController* menuPlayerController;
 
 	bool bHasLoaded = false;

@@ -38,6 +38,10 @@ void UCustomGameInstance::SaveGameData(FPlayerStats pStats, FGraphicsSettingsStr
 
 		// Start async save process.
 		UGameplayStatics::AsyncSaveGameToSlot(saveGameInstance, FString("MainSaveSlot"), 0, SavedDelegate);
+
+		
+		if (IsValid(menuPlayerController))
+			menuPlayerController->AddSaveWidget();
 	}
 }
 
