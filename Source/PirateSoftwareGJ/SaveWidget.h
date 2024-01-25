@@ -21,6 +21,8 @@ public:
 
 	void HideSelf();
 
+	void ShowSelf();
+
 private:
 
 	UPROPERTY(meta=(BindWidget))

@@ -20,7 +20,9 @@ class PIRATESOFTWAREGJ_API UCustomGameInstance : public UGameInstance
 public:
 	UCustomGameInstance();
 
-	bool GetHasLoaded() const { return bHasLoaded; };
+	bool GetHasLoaded() const { return bHasLoaded; }
+
+	void SetMenuPCRef(AMenuPlayerController* menuPCRef) { menuPlayerController = menuPCRef; }
 
 protected:
 	// Called when the game starts or when spawned
