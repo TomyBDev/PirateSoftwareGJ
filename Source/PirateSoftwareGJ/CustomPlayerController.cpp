@@ -16,6 +16,10 @@ void ACustomPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Hide cursor since it was shown on the menu screens
+	SetShowMouseCursor(false);
+
+	// Add the mapping context.
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);

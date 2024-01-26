@@ -47,6 +47,8 @@ private:
 
 	void HackOver();
 
+	void PlayerCheck();;
+
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* cameraHead;
 	
@@ -62,13 +64,27 @@ private:
 	UPROPERTY(EditAnywhere, Category="Camera Settings")
 	float turnCooldown = 2.5f;
 
+	UPROPERTY(EditAnywhere, Category="Camera Settings")
+	float startAngle = 0.f;
+
 	bool bWaiting = false;
+
+	bool bClockwise = false;
 	
 	FTimerHandle turnCooldownTH;
 
 	FRotator targetRot, startRot;
 
+	// Disabled Timer
+
 	FTimerHandle disabledTH;
 
 	float disabledTime = 5.f;
+
+	// Detection Loop
+
+	FTimerHandle detectionTH;
+
+	ACharacter* characterRef;
+	
 };

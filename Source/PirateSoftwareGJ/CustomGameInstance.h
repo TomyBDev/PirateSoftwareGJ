@@ -20,7 +20,18 @@ class PIRATESOFTWAREGJ_API UCustomGameInstance : public UGameInstance
 public:
 	UCustomGameInstance();
 
-	bool GetHasLoaded() const { return bHasLoaded; };
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	FGraphicsSettingsStruct GetGraphicsSettings() const { return graphicsSettings; }
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	FGeneralSettingsStruct GetGeneralSettings() const { return generalSettings; }
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	FAudioSettingsStruct GetAudioSettings() const { return audioSettings; }
+
+	bool GetHasLoaded() const { return bHasLoaded; }
+
+	void SetMenuPCRef(AMenuPlayerController* menuPCRef) { menuPlayerController = menuPCRef; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -29,7 +40,7 @@ protected:
 private:
 
 	UFUNCTION(BlueprintCallable)
-	void SaveGameData(FPlayerStats pStats, FGraphicsSettingsStruct graphics, FGameplaySettingsStruct gameplay, FAudioSettingsStruct audio);
+	void SaveGameData(FPlayerStats pStats, FGraphicsSettingsStruct graphics, FGeneralSettingsStruct general, FAudioSettingsStruct audio);
 
 	void SaveComplete_Delegate(const FString& slotName, const int32 userIndex, bool bSuccess);
 
@@ -40,11 +51,11 @@ private:
 	UPROPERTY()
 	FPlayerStats playerStats;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintGetter=GetGraphicsSettings)
 	FGraphicsSettingsStruct graphicsSettings;
 
 	UPROPERTY()
-	FGameplaySettingsStruct gameplaySettings;
+	FGeneralSettingsStruct generalSettings;
 
 	UPROPERTY()
 	FAudioSettingsStruct audioSettings;

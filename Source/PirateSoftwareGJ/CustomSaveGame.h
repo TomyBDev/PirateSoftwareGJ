@@ -30,13 +30,10 @@ public:
 	// Save Data
 
 	UPROPERTY()
-	FPlayerStats playerStats;
-
-	UPROPERTY()
 	FGraphicsSettingsStruct graphicsSettings;
 
 	UPROPERTY()
-	FGameplaySettingsStruct gameplaySettings;
+	FGeneralSettingsStruct generalSettings;
 
 	UPROPERTY()
 	FAudioSettingsStruct audioSettings;

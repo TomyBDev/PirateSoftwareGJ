@@ -7,6 +7,9 @@
 #include "VisionConeComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #define COLLISION_INTERACTION ECC_GameTraceChannel1
 
@@ -29,8 +32,14 @@ ASurveillanceCamera::ASurveillanceCamera()
 void ASurveillanceCamera::BeginPlay()
 {
 	Super::BeginPlay();
+
+	characterRef = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+
+	GetWorld()->GetTimerManager().SetTimer(detectionTH, this, &ASurveillanceCamera::PlayerCheck, 0.166f, true);
+
+	cameraHead->SetRelativeRotation(FRotator(0.0f, startAngle, 0.0f));
 	
-	targetRot = FRotator(0,turnRange,0);
+	targetRot = FRotator(0,startAngle + turnRange,0);
 }
 
 // Called every frame
@@ -41,16 +50,18 @@ void ASurveillanceCamera::Tick(float DeltaTime)
 	if (bWaiting)
 		return;
 
-	if(cameraHead->GetRelativeRotation().Yaw > turnRange )
+	if(cameraHead->GetRelativeRotation().Yaw > startAngle + turnRange )
 	{
-		cameraHead->SetRelativeRotation(FRotator(0,turnRange-1,0));
+		cameraHead->SetRelativeRotation(FRotator(0,startAngle+turnRange-1,0));
+		bClockwise = true;
 		GetWorld()->GetTimerManager().SetTimer(turnCooldownTH, this, &ASurveillanceCamera::TurnCamera, turnCooldown, false);
 		bWaiting = true;
 		return;
 	}
-	if (cameraHead->GetRelativeRotation().Yaw < -turnRange)
+	if (cameraHead->GetRelativeRotation().Yaw < startAngle - turnRange)
 	{
-		cameraHead->SetRelativeRotation(FRotator(0,-turnRange+1,0));
+		cameraHead->SetRelativeRotation(FRotator(0,startAngle-turnRange+1,0));
+		bClockwise = false;
 		GetWorld()->GetTimerManager().SetTimer(turnCooldownTH, this, &ASurveillanceCamera::TurnCamera, turnCooldown, false);
 		bWaiting = true;
 		return;
@@ -110,7 +121,15 @@ bool ASurveillanceCamera::LookatEnd_Implementation()
 
 void ASurveillanceCamera::TurnCamera()
 {
-	targetRot.Yaw *= -1;
+	if (bClockwise)
+	{
+		targetRot.Yaw = startAngle - turnRange;
+	}
+	else
+	{
+		targetRot.Yaw = startAngle + turnRange;
+	}
+	//targetRot.Yaw *= -1;
 	bWaiting = false;
 }
 
@@ -127,5 +146,22 @@ void ASurveillanceCamera::HackOver()
 		
 
 	bLockInteraction = false;
+}
+
+void ASurveillanceCamera::PlayerCheck()
+{
+	if (IsValid(characterRef) && FVector::Dist(characterRef->GetActorLocation(), visionCone->GetComponentLocation()) < visionCone->GetRange())
+	{
+		float thing1 = abs(cameraHead->GetForwardVector().Dot(UKismetMathLibrary::GetDirectionUnitVector(visionCone->GetComponentLocation(),characterRef->GetActorLocation())));
+		float thing2 = visionCone->GetAngle() / 90.f;
+	
+		if (thing1 < thing2)
+		{
+			visionCone->SetAlertState(2);
+			return;
+		}
+	}
+
+	visionCone->SetAlertState(0);
 }
 
