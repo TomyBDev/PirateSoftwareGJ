@@ -68,12 +68,8 @@ private:
 	float startAngle = 0.f;
 
 	bool bWaiting = false;
-
-	bool bClockwise = false;
 	
 	FTimerHandle turnCooldownTH;
-
-	FRotator targetRot, startRot;
 
 	// Disabled Timer
 

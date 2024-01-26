@@ -38,8 +38,6 @@ void ASurveillanceCamera::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(detectionTH, this, &ASurveillanceCamera::PlayerCheck, 0.166f, true);
 
 	cameraHead->SetRelativeRotation(FRotator(0.0f, startAngle, 0.0f));
-	
-	targetRot = FRotator(0,startAngle + turnRange,0);
 }
 
 // Called every frame
@@ -52,23 +50,20 @@ void ASurveillanceCamera::Tick(float DeltaTime)
 
 	if(cameraHead->GetRelativeRotation().Yaw > startAngle + turnRange )
 	{
-		cameraHead->SetRelativeRotation(FRotator(0,startAngle+turnRange-1,0));
-		bClockwise = true;
+		cameraHead->SetRelativeRotation(FRotator(0,startAngle+turnRange-0.1f,0));
 		GetWorld()->GetTimerManager().SetTimer(turnCooldownTH, this, &ASurveillanceCamera::TurnCamera, turnCooldown, false);
 		bWaiting = true;
 		return;
 	}
 	if (cameraHead->GetRelativeRotation().Yaw < startAngle - turnRange)
 	{
-		cameraHead->SetRelativeRotation(FRotator(0,startAngle-turnRange+1,0));
-		bClockwise = false;
+		cameraHead->SetRelativeRotation(FRotator(0,startAngle-turnRange+0.1f,0));
 		GetWorld()->GetTimerManager().SetTimer(turnCooldownTH, this, &ASurveillanceCamera::TurnCamera, turnCooldown, false);
 		bWaiting = true;
 		return;
 	}
 	
-	cameraHead->SetRelativeRotation(FMath::RInterpConstantTo(cameraHead->GetRelativeRotation(), cameraHead->GetRelativeRotation() + targetRot, DeltaTime, turnSpeed));
-	
+	cameraHead->AddRelativeRotation(FRotator(0.f,DeltaTime*turnSpeed, 0.f));
 }
 
 bool ASurveillanceCamera::BeginInteraction_Implementation()
@@ -121,15 +116,7 @@ bool ASurveillanceCamera::LookatEnd_Implementation()
 
 void ASurveillanceCamera::TurnCamera()
 {
-	if (bClockwise)
-	{
-		targetRot.Yaw = startAngle - turnRange;
-	}
-	else
-	{
-		targetRot.Yaw = startAngle + turnRange;
-	}
-	//targetRot.Yaw *= -1;
+	turnSpeed *= -1;
 	bWaiting = false;
 }
 
