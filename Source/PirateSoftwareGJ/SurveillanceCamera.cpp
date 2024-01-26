@@ -7,6 +7,9 @@
 #include "VisionConeComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #define COLLISION_INTERACTION ECC_GameTraceChannel1
 
@@ -29,6 +32,10 @@ ASurveillanceCamera::ASurveillanceCamera()
 void ASurveillanceCamera::BeginPlay()
 {
 	Super::BeginPlay();
+
+	characterRef = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+
+	GetWorld()->GetTimerManager().SetTimer(detectionTH, this, &ASurveillanceCamera::PlayerCheck, 0.166f, true);
 	
 	targetRot = FRotator(0,turnRange,0);
 }
@@ -127,5 +134,22 @@ void ASurveillanceCamera::HackOver()
 		
 
 	bLockInteraction = false;
+}
+
+void ASurveillanceCamera::PlayerCheck()
+{
+	if (IsValid(characterRef) && FVector::Dist(characterRef->GetActorLocation(), visionCone->GetComponentLocation()) < visionCone->GetRange())
+	{
+		float thing1 = abs(cameraHead->GetForwardVector().Dot(UKismetMathLibrary::GetDirectionUnitVector(visionCone->GetComponentLocation(),characterRef->GetActorLocation())));
+		float thing2 = visionCone->GetAngle() / 90.f;
+	
+		if (thing1 < thing2)
+		{
+			visionCone->SetAlertState(2);
+			return;
+		}
+	}
+
+	visionCone->SetAlertState(0);
 }
 

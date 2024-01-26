@@ -31,7 +31,7 @@ protected:
 private:
 
 	UFUNCTION(BlueprintCallable)
-	void SaveGameData(FPlayerStats pStats, FGraphicsSettingsStruct graphics, FGameplaySettingsStruct gameplay, FAudioSettingsStruct audio);
+	void SaveGameData(FPlayerStats pStats, FGraphicsSettingsStruct graphics, FGeneralSettingsStruct general, FAudioSettingsStruct audio);
 
 	void SaveComplete_Delegate(const FString& slotName, const int32 userIndex, bool bSuccess);
 
@@ -46,7 +46,7 @@ private:
 	FGraphicsSettingsStruct graphicsSettings;
 
 	UPROPERTY()
-	FGameplaySettingsStruct gameplaySettings;
+	FGeneralSettingsStruct generalSettings;
 
 	UPROPERTY()
 	FAudioSettingsStruct audioSettings;

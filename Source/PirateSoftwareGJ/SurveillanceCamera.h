@@ -47,6 +47,8 @@ private:
 
 	void HackOver();
 
+	void PlayerCheck();;
+
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* cameraHead;
 	
@@ -68,7 +70,16 @@ private:
 
 	FRotator targetRot, startRot;
 
+	// Disabled Timer
+
 	FTimerHandle disabledTH;
 
 	float disabledTime = 5.f;
+
+	// Detection Loop
+
+	FTimerHandle detectionTH;
+
+	ACharacter* characterRef;
+	
 };

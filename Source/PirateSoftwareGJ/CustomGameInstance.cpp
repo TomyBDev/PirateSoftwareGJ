@@ -19,7 +19,7 @@ void UCustomGameInstance::Init()
 	LoadGameData();
 }
 
-void UCustomGameInstance::SaveGameData(FPlayerStats pStats, FGraphicsSettingsStruct graphics, FGameplaySettingsStruct gameplay, FAudioSettingsStruct audio)
+void UCustomGameInstance::SaveGameData(FPlayerStats pStats, FGraphicsSettingsStruct graphics, FGeneralSettingsStruct general, FAudioSettingsStruct audio)
 {
 	if (UCustomSaveGame* saveGameInstance = Cast<UCustomSaveGame>(UGameplayStatics::CreateSaveGameObject(UCustomSaveGame::StaticClass())))
 	{
@@ -29,9 +29,8 @@ void UCustomGameInstance::SaveGameData(FPlayerStats pStats, FGraphicsSettingsStr
 		SavedDelegate.BindUObject(this, &UCustomGameInstance::SaveComplete_Delegate);
 
 		// Set data on the savegame object.
-		saveGameInstance->playerStats = pStats;
 		saveGameInstance->graphicsSettings = graphics;
-		saveGameInstance->gameplaySettings = gameplay;
+		saveGameInstance->generalSettings = general;
 		saveGameInstance->audioSettings = audio;
 
 		// Start async save process.
@@ -68,9 +67,8 @@ void UCustomGameInstance::LoadComplete_Delegate(const FString& SlotName, const i
 	if (!IsValid(customSaveGame))
 		return;
 	
-	playerStats = customSaveGame->playerStats;
 	graphicsSettings = customSaveGame->graphicsSettings;
-	gameplaySettings = customSaveGame->gameplaySettings;
+	generalSettings = customSaveGame->generalSettings;
 	audioSettings = customSaveGame->audioSettings;
 	
 	if(GEngine)
