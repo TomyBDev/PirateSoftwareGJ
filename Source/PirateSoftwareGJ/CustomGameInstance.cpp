@@ -19,7 +19,7 @@ void UCustomGameInstance::Init()
 	LoadGameData();
 }
 
-void UCustomGameInstance::SaveGameData(FPlayerStats pStats, FGraphicsSettingsStruct graphics, FGeneralSettingsStruct general, FAudioSettingsStruct audio)
+void UCustomGameInstance::SaveGameData(FGraphicsSettingsStruct graphics, FGeneralSettingsStruct general, FAudioSettingsStruct audio)
 {
 	if (UCustomSaveGame* saveGameInstance = Cast<UCustomSaveGame>(UGameplayStatics::CreateSaveGameObject(UCustomSaveGame::StaticClass())))
 	{
