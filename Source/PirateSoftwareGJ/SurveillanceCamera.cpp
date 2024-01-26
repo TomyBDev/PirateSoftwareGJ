@@ -36,8 +36,10 @@ void ASurveillanceCamera::BeginPlay()
 	characterRef = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 
 	GetWorld()->GetTimerManager().SetTimer(detectionTH, this, &ASurveillanceCamera::PlayerCheck, 0.166f, true);
+
+	cameraHead->SetRelativeRotation(FRotator(0.0f, startAngle, 0.0f));
 	
-	targetRot = FRotator(0,turnRange,0);
+	targetRot = FRotator(0,startAngle + turnRange,0);
 }
 
 // Called every frame
@@ -48,16 +50,18 @@ void ASurveillanceCamera::Tick(float DeltaTime)
 	if (bWaiting)
 		return;
 
-	if(cameraHead->GetRelativeRotation().Yaw > turnRange )
+	if(cameraHead->GetRelativeRotation().Yaw > startAngle + turnRange )
 	{
-		cameraHead->SetRelativeRotation(FRotator(0,turnRange-1,0));
+		cameraHead->SetRelativeRotation(FRotator(0,startAngle+turnRange-1,0));
+		bClockwise = true;
 		GetWorld()->GetTimerManager().SetTimer(turnCooldownTH, this, &ASurveillanceCamera::TurnCamera, turnCooldown, false);
 		bWaiting = true;
 		return;
 	}
-	if (cameraHead->GetRelativeRotation().Yaw < -turnRange)
+	if (cameraHead->GetRelativeRotation().Yaw < startAngle - turnRange)
 	{
-		cameraHead->SetRelativeRotation(FRotator(0,-turnRange+1,0));
+		cameraHead->SetRelativeRotation(FRotator(0,startAngle-turnRange+1,0));
+		bClockwise = false;
 		GetWorld()->GetTimerManager().SetTimer(turnCooldownTH, this, &ASurveillanceCamera::TurnCamera, turnCooldown, false);
 		bWaiting = true;
 		return;
@@ -117,7 +121,15 @@ bool ASurveillanceCamera::LookatEnd_Implementation()
 
 void ASurveillanceCamera::TurnCamera()
 {
-	targetRot.Yaw *= -1;
+	if (bClockwise)
+	{
+		targetRot.Yaw = startAngle - turnRange;
+	}
+	else
+	{
+		targetRot.Yaw = startAngle + turnRange;
+	}
+	//targetRot.Yaw *= -1;
 	bWaiting = false;
 }
 

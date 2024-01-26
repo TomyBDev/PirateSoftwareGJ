@@ -64,7 +64,12 @@ private:
 	UPROPERTY(EditAnywhere, Category="Camera Settings")
 	float turnCooldown = 2.5f;
 
+	UPROPERTY(EditAnywhere, Category="Camera Settings")
+	float startAngle = 0.f;
+
 	bool bWaiting = false;
+
+	bool bClockwise = false;
 	
 	FTimerHandle turnCooldownTH;
 
