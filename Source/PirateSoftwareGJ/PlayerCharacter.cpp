@@ -130,10 +130,15 @@ void APlayerCharacter::StopSprint_Implementation()
 
 void APlayerCharacter::Attack1_Implementation()
 {
-	cube->SetMaterial(0, translucentMat);
-	Tags.RemoveAt(0);
-	//ToDo: Fix AI detection of player round cloaking.
-	GetWorld()->GetTimerManager().SetTimer(cloakTH, this, &APlayerCharacter::EndCloak, cloakTime, false);
+	if (!bCloaked)
+	{
+		cube->SetMaterial(0, translucentMat);
+		Tags.RemoveAt(0);
+		bCloaked = true;
+		//ToDo: Fix AI detection of player round cloaking.
+		GetWorld()->GetTimerManager().SetTimer(cloakTH, this, &APlayerCharacter::EndCloak, cloakTime, false);
+	}
+
 }
 
 void APlayerCharacter::Attack2_Implementation()
@@ -156,4 +161,5 @@ void APlayerCharacter::EndCloak()
 	//ToDo: Fix AI detection of player round cloaking.
 	cube->SetMaterial(0, normalMat);
 	Tags.Add("Player");
+	bCloaked = false;
 }

@@ -6,6 +6,7 @@
 #include "InteractableActor.h"
 #include "SurveillanceCamera.generated.h"
 
+class AEnemyCharacter;
 class UArrowComponent;
 
 UCLASS()
@@ -67,6 +68,11 @@ private:
 	UPROPERTY(EditAnywhere, Category="Camera Settings")
 	float startAngle = 0.f;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> enemyActor;
+
+	TArray<AEnemyCharacter*> enemies;
+	
 	bool bWaiting = false;
 	
 	FTimerHandle turnCooldownTH;

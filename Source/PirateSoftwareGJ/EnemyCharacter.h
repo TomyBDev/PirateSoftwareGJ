@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
 
+class ADistraction;
 class URealtimeMeshComponent;
 
 UCLASS()
@@ -29,6 +30,10 @@ public:
 
 	class UVisionConeComponent* GetVisionConeComponent() const { return visionCone; }
 
+	void InvestigateCamera(FVector loc);
+
+	void InvestigateDistraction(AActor* actor);
+	
 private:
 	
 	UPROPERTY(EditAnywhere)

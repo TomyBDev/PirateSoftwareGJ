@@ -6,6 +6,7 @@
 #include "InteractableActor.h"
 #include "Distraction.generated.h"
 
+class AEnemyCharacter;
 /**
  * 
  */
@@ -24,6 +25,8 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void TurnOff();
 
 protected:
 
@@ -44,4 +47,11 @@ protected:
 private:
 	UPROPERTY(EditAnywhere)
 	USoundBase* distractionSound;
+
+	UAudioComponent* distractionAC;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> enemyActor;
+
+	TArray<AEnemyCharacter*> enemies;
 };

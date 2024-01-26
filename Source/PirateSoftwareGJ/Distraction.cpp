@@ -3,6 +3,8 @@
 
 #include "Distraction.h"
 
+#include "EnemyCharacter.h"
+#include "Components/AudioComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 ADistraction::ADistraction()
@@ -12,11 +14,26 @@ ADistraction::ADistraction()
 void ADistraction::BeginPlay()
 {
 	Super::BeginPlay();
+
+	TArray<AActor*> actors;
+
+	if (IsValid(enemyActor))
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), enemyActor, actors);
+
+	for (const auto a : actors)
+	{
+		enemies.Push(Cast<AEnemyCharacter>(a));
+	}
 }
 
 void ADistraction::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void ADistraction::TurnOff()
+{
+	distractionAC->SetActive(false);
 }
 
 bool ADistraction::BeginInteraction_Implementation()
@@ -33,8 +50,13 @@ bool ADistraction::EndInteraction_Implementation()
 		return true;
 
 	if (IsValid(distractionSound))
-		UGameplayStatics::PlaySound2D(GetWorld(), distractionSound, 1.f,
+		distractionAC = UGameplayStatics::SpawnSound2D(GetWorld(), distractionSound, 1.f,
  1.f, 0.f);
+
+	for (AEnemyCharacter* e : enemies)
+	{
+		e->InvestigateDistraction(this);
+	}
 	
 	return false;
 }

@@ -3,7 +3,9 @@
 
 #include "SurveillanceCamera.h"
 
+#include "EnemyCharacter.h"
 #include "InteractWidget.h"
+#include "PlayerCharacter.h"
 #include "VisionConeComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
@@ -25,7 +27,6 @@ ASurveillanceCamera::ASurveillanceCamera()
 	visionCone = CreateDefaultSubobject<UVisionConeComponent>(TEXT("Vision Cone Component"));
 	AddOwnedComponent(visionCone);
 	visionCone->AttachToComponent(cameraHead, FAttachmentTransformRules::KeepRelativeTransform);
-	
 }
 
 // Called when the game starts or when spawned
@@ -38,6 +39,16 @@ void ASurveillanceCamera::BeginPlay()
 	GetWorld()->GetTimerManager().SetTimer(detectionTH, this, &ASurveillanceCamera::PlayerCheck, 0.166f, true);
 
 	cameraHead->SetRelativeRotation(FRotator(0.0f, startAngle, 0.0f));
+
+	TArray<AActor*> actors;
+
+	if (IsValid(enemyActor))
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), enemyActor, actors);
+
+	for (const auto a : actors)
+	{
+		enemies.Push(Cast<AEnemyCharacter>(a));
+	}
 }
 
 // Called every frame
@@ -141,10 +152,18 @@ void ASurveillanceCamera::PlayerCheck()
 	{
 		float thing1 = abs(cameraHead->GetForwardVector().Dot(UKismetMathLibrary::GetDirectionUnitVector(visionCone->GetComponentLocation(),characterRef->GetActorLocation())));
 		float thing2 = visionCone->GetAngle() / 90.f;
-	
-		if (thing1 < thing2)
+
+		APlayerCharacter* pchar = Cast<APlayerCharacter>(characterRef);
+		
+		if (thing1 < thing2 && IsValid(pchar) && !pchar->GetIsCloaked())
 		{
 			visionCone->SetAlertState(2);
+
+			for (AEnemyCharacter* e : enemies)
+			{
+				e->InvestigateCamera(characterRef->GetActorLocation());
+			}
+			
 			return;
 		}
 	}

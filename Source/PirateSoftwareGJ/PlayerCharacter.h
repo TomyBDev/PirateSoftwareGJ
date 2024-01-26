@@ -37,6 +37,8 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void Ability2();
 
+	bool GetIsCloaked() const { return bCloaked; }
+
 protected:
 	virtual void Move_Implementation(const FInputActionValue& Value) override;
 
@@ -86,4 +88,6 @@ private:
 	FTimerHandle cloakTH;
 
 	float cloakTime = 5.f;
+
+	bool bCloaked = false;
 };
