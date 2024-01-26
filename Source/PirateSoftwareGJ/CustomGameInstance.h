@@ -20,6 +20,15 @@ class PIRATESOFTWAREGJ_API UCustomGameInstance : public UGameInstance
 public:
 	UCustomGameInstance();
 
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	FGraphicsSettingsStruct GetGraphicsSettings() const { return graphicsSettings; }
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	FGeneralSettingsStruct GetGeneralSettings() const { return generalSettings; }
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	FAudioSettingsStruct GetAudioSettings() const { return audioSettings; }
+
 	bool GetHasLoaded() const { return bHasLoaded; }
 
 	void SetMenuPCRef(AMenuPlayerController* menuPCRef) { menuPlayerController = menuPCRef; }
@@ -42,7 +51,7 @@ private:
 	UPROPERTY()
 	FPlayerStats playerStats;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintGetter=GetGraphicsSettings)
 	FGraphicsSettingsStruct graphicsSettings;
 
 	UPROPERTY()
