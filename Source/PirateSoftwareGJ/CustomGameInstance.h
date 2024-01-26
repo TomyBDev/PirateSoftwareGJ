@@ -40,7 +40,7 @@ protected:
 private:
 
 	UFUNCTION(BlueprintCallable)
-	void SaveGameData(FPlayerStats pStats, FGraphicsSettingsStruct graphics, FGeneralSettingsStruct general, FAudioSettingsStruct audio);
+	void SaveGameData(FGraphicsSettingsStruct graphics, FGeneralSettingsStruct general, FAudioSettingsStruct audio);
 
 	void SaveComplete_Delegate(const FString& slotName, const int32 userIndex, bool bSuccess);
 
