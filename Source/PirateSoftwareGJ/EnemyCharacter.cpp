@@ -7,17 +7,8 @@
 
 #include "DrawDebugHelpers.h"
 #include "EnemyAIController.h"
-#include "RealtimeMeshComponent.h"
-#include "Kismet/KismetMathLibrary.h"
-#include "RealtimeMeshLibrary.h"
-#include "RealtimeMeshSimple.h"
-#include "ShaderPrintParameters.h"
 #include "VisionConeComponent.h"
-#include "Mesh/RealtimeMeshBasicShapeTools.h"
-#include "Mesh/RealtimeMeshBuilder.h"
-#include "Mesh/RealtimeMeshSimpleData.h"
-#include "Perception/AIPerceptionComponent.h"
-#include "Perception/AISense_Sight.h"
+
 
 // Sets default values
 AEnemyCharacter::AEnemyCharacter()
@@ -43,5 +34,24 @@ void AEnemyCharacter::BeginPlay()
 void AEnemyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	
+}
+
+void AEnemyCharacter::InvestigateCamera(FVector loc)
+{
+	visionCone->SetAlertState(1);
+	
+	AEnemyAIController* aiController = Cast<AEnemyAIController>(GetController());
+	if (IsValid(aiController))
+		aiController->SetBBVec(TEXT("LastKnownLocation"), loc);
+}
+
+void AEnemyCharacter::InvestigateDistraction(AActor* actor)
+{
+	visionCone->SetAlertState(1);
+	
+	AEnemyAIController* aiController = Cast<AEnemyAIController>(GetController());
+	if (IsValid(aiController))
+		aiController->SetBBObj(TEXT("Distraction"), actor);
 	
 }

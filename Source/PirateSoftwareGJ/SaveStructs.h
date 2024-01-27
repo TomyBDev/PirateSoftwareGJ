@@ -36,9 +36,6 @@ struct FGraphicsSettingsStruct
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 windowedMode;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 resolution;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -60,9 +57,8 @@ struct FGraphicsSettingsStruct
 	int32 shadowQuality;
 
 
-	FGraphicsSettingsStruct(int32 wm = 0, int32 r = 0, int32 frl = 0, int32 vd = 0, int32 pp = 0, int32 aa = 0, int32 tq = 0, int32 sq = 0)
+	FGraphicsSettingsStruct(int32 r = 0, int32 frl = 0, int32 vd = 0, int32 pp = 0, int32 aa = 0, int32 tq = 0, int32 sq = 0)
 	{
-		windowedMode = wm;
 		resolution = r;
 		frameRateLimit = frl;
 		viewDistance = vd;
@@ -74,16 +70,20 @@ struct FGraphicsSettingsStruct
 };
 
 USTRUCT(BlueprintType)
-struct FGameplaySettingsStruct
+struct FGeneralSettingsStruct
 {
 	GENERATED_USTRUCT_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int32 windowedMode;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 sensitivity;
 
 
-	FGameplaySettingsStruct(int32 s = 5)
+	FGeneralSettingsStruct(int32 wm = 0, int32 s = 5)
 	{
+		windowedMode = wm;
 		sensitivity = s;
 	}
 };
@@ -100,13 +100,13 @@ struct FAudioSettingsStruct
 	int32 musicVolume;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 stxVolume;
+	int32 sfxVolume;
 
 
 	FAudioSettingsStruct(int32 gv = 1, int32 mv = 1, int32 sv = 1)
 	{
 		globalVolume = gv;
 		musicVolume = mv;
-		stxVolume = sv;
+		sfxVolume = sv;
 	}
 };

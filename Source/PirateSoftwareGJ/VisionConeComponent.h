@@ -27,6 +27,10 @@ public:
 
 	void SetAlertState(int state);
 
+	float GetRange() const { return distance; }
+	
+	float GetAngle() const { return angle; }
+
 private:
 	
 	TArray<FVector> GetPoints();

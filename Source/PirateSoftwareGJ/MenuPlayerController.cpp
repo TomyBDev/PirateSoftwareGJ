@@ -24,6 +24,8 @@ void AMenuPlayerController::BeginPlay()
 	UCustomGameInstance* cgi = Cast<UCustomGameInstance>(UGameplayStatics::GetGameInstance(GetWorld()));
 	if (IsValid(cgi))
 	{
+		cgi->SetMenuPCRef(this);
+		
 		AddSaveWidget();
 
 		if (cgi->GetHasLoaded())
@@ -49,7 +51,7 @@ void AMenuPlayerController::AddSaveWidget()
 
 	if (IsValid(savingWidget))
 	{
-		savingWidget->AddToViewport();
+		savingWidget->SetVisibility(ESlateVisibility::Visible);
 		return;
 	}
 	
@@ -59,7 +61,7 @@ void AMenuPlayerController::AddSaveWidget()
 	savingWidget = Cast<USaveWidget>(CreateWidget(this, savingWidgetClass));
 	
 	if (IsValid(savingWidget))
-		savingWidget->AddToViewport();
+		savingWidget->AddToViewport(100);
 	
 }
 

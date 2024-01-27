@@ -9,6 +9,7 @@
 
 #include "PlayerInputInterface.h"
 #include "InteractionInterface.h"
+#include "Blueprint/UserWidget.h"
 
 #define COLLISION_INTERACTION ECC_GameTraceChannel1
 
@@ -16,6 +17,10 @@ void ACustomPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Hide cursor since it was shown on the menu screens
+	SetShowMouseCursor(false);
+
+	// Add the mapping context.
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
@@ -67,6 +72,28 @@ void ACustomPlayerController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	GetLookatActor();
+}
+
+void ACustomPlayerController::SetPlayerDied()
+{
+	if (!IsValid(diedWidgetClass))
+		return;
+
+	diedWidget = CreateWidget(this, diedWidgetClass);
+	
+	if (IsValid(diedWidget))
+		diedWidget->AddToViewport(100);
+}
+
+void ACustomPlayerController::SetPlayerWon()
+{
+	if (!IsValid(winWidgetClass))
+		return;
+
+	winWidget = CreateWidget(this, winWidgetClass);
+	
+	if (IsValid(winWidget))
+		winWidget->AddToViewport(100);
 }
 
 void ACustomPlayerController::Move(const FInputActionValue& Value)
