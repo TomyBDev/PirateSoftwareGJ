@@ -39,6 +39,11 @@ public:
 
 	bool GetIsCloaked() const { return bCloaked; }
 
+	void HitPlayer();
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	int GetHP() const { return hp; }
+
 protected:
 	virtual void Move_Implementation(const FInputActionValue& Value) override;
 
@@ -86,6 +91,9 @@ private:
 	UMaterial* translucentMat;
 
 	float sensitivity = 1.f;
+
+	UPROPERTY(BlueprintGetter=GetHP)
+	int hp = 3;
 	
 	FTimerHandle cloakTH;
 

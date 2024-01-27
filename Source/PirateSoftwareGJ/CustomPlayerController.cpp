@@ -85,6 +85,17 @@ void ACustomPlayerController::SetPlayerDied()
 		diedWidget->AddToViewport(100);
 }
 
+void ACustomPlayerController::SetPlayerWon()
+{
+	if (!IsValid(winWidgetClass))
+		return;
+
+	winWidget = CreateWidget(this, winWidgetClass);
+	
+	if (IsValid(winWidget))
+		winWidget->AddToViewport(100);
+}
+
 void ACustomPlayerController::Move(const FInputActionValue& Value)
 {
 	APawn* pawn = GetPawn();

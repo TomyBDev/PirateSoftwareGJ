@@ -26,14 +26,6 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	void PlayerDied();
 
-private:
-
-	void DeathTimerComplete();
-
-	FTimerHandle deathScreenTH;
-
-	float deathScreenTime = 4.f;
 
 };

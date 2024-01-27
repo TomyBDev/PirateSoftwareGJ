@@ -25,6 +25,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void SetPlayerDied();
+	
+	void SetPlayerWon();
 
 private:
 
@@ -104,6 +106,12 @@ private:
 
 	UPROPERTY()
 	UUserWidget* diedWidget;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> winWidgetClass;
+
+	UPROPERTY()
+	UUserWidget* winWidget;
 	
 	AActor* lookatActor = nullptr;
 };

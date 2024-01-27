@@ -3,8 +3,10 @@
 
 #include "EndLevel.h"
 
+#include "MainGameModeBase.h"
 #include "PlayerCharacter.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/GameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -42,6 +44,10 @@ void AEndLevel::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Othe
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (IsValid(Cast<APlayerCharacter>(OtherActor)))
-		UGameplayStatics::OpenLevel(GetWorld(), "p_LevelSelectScreen");
+	{
+		AMainGameModeBase* gm = Cast<AMainGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+		if (IsValid(gm))
+			gm->PlayerWon();
+	}
 }
 
