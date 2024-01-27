@@ -85,6 +85,8 @@ private:
 	UPROPERTY(EditAnywhere)
 	UMaterial* translucentMat;
 
+	float sensitivity = 1.f;
+	
 	FTimerHandle cloakTH;
 
 	float cloakTime = 5.f;

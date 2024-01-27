@@ -24,6 +24,8 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
+	void SetPlayerDied();
+
 private:
 
 	UFUNCTION()
@@ -97,5 +99,11 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractionAction;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> diedWidgetClass;
+
+	UPROPERTY()
+	UUserWidget* diedWidget;
+	
 	AActor* lookatActor = nullptr;
 };

@@ -3,6 +3,7 @@
 
 #include "PlayerCharacter.h"
 
+#include "CustomGameInstance.h"
 #include "EnhancedInputSubsystems.h"
 #include "StaminaComponent.h"
 #include "Camera/CameraComponent.h"
@@ -54,7 +55,10 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	UCustomGameInstance* cgi = Cast<UCustomGameInstance>(GetGameInstance());
+	if(IsValid(cgi))
+		sensitivity = cgi->GetGeneralSettings().sensitivity / 5.f;
 }
 
 // Called every frame
@@ -105,8 +109,8 @@ void APlayerCharacter::Look_Implementation(const FInputActionValue& Value)
 		return;
 
 	// add yaw and pitch input to controller
-	AddControllerPitchInput(LookAxisVector.Y);
-	AddControllerYawInput(LookAxisVector.X);
+	AddControllerPitchInput(LookAxisVector.Y * sensitivity);
+	AddControllerYawInput(LookAxisVector.X * sensitivity);
 
 	FRotator rot = GetController()->GetControlRotation();;
 	GetController()->SetControlRotation(FRotator(FMath::ClampAngle(FMath::UnwindDegrees(rot.Pitch), -30.f, 30.f), rot.Yaw, rot.Roll));

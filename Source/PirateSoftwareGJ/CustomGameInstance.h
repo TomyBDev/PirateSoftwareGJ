@@ -29,6 +29,15 @@ public:
 	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
 	FAudioSettingsStruct GetAudioSettings() const { return audioSettings; }
 
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	bool IsLevel1Complete() const { return bLevel1Complete; }
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	bool IsLevel2Complete() const { return bLevel2Complete; }
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	bool IsLevel3Complete() const { return bLevel3Complete; }
+
 	bool GetHasLoaded() const { return bHasLoaded; }
 
 	void SetMenuPCRef(AMenuPlayerController* menuPCRef) { menuPlayerController = menuPCRef; }
@@ -59,6 +68,15 @@ private:
 
 	UPROPERTY()
 	FAudioSettingsStruct audioSettings;
+
+	UPROPERTY(BlueprintGetter=IsLevel1Complete)
+	bool bLevel1Complete = false;
+
+	UPROPERTY(BlueprintGetter=IsLevel2Complete)
+	bool bLevel2Complete = false;
+
+	UPROPERTY(BlueprintGetter=IsLevel3Complete)
+	bool bLevel3Complete = false;
 
 	UPROPERTY()
 	AMenuPlayerController* menuPlayerController;
