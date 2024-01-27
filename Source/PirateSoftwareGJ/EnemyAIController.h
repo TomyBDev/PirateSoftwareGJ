@@ -35,6 +35,10 @@ public:
 	void SetPerceptionRange(float range);
 
 	void SetPerceptionAngle(float angle);
+
+	void SetBBObj(FName bbName, AActor* actor);
+
+	void SetBBVec(FName bbName, FVector vec);
 	
 private:
 	

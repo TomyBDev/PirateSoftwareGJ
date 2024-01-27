@@ -3,10 +3,15 @@
 
 #include "SurveillanceCamera.h"
 
+#include "EnemyCharacter.h"
 #include "InteractWidget.h"
+#include "PlayerCharacter.h"
 #include "VisionConeComponent.h"
 #include "Components/ArrowComponent.h"
 #include "Components/BoxComponent.h"
+#include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 
 #define COLLISION_INTERACTION ECC_GameTraceChannel1
 
@@ -22,15 +27,28 @@ ASurveillanceCamera::ASurveillanceCamera()
 	visionCone = CreateDefaultSubobject<UVisionConeComponent>(TEXT("Vision Cone Component"));
 	AddOwnedComponent(visionCone);
 	visionCone->AttachToComponent(cameraHead, FAttachmentTransformRules::KeepRelativeTransform);
-	
 }
 
 // Called when the game starts or when spawned
 void ASurveillanceCamera::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	targetRot = FRotator(0,turnRange,0);
+
+	characterRef = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+
+	GetWorld()->GetTimerManager().SetTimer(detectionTH, this, &ASurveillanceCamera::PlayerCheck, 0.166f, true);
+
+	cameraHead->SetRelativeRotation(FRotator(0.0f, startAngle, 0.0f));
+
+	TArray<AActor*> actors;
+
+	if (IsValid(enemyActor))
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), enemyActor, actors);
+
+	for (const auto a : actors)
+	{
+		enemies.Push(Cast<AEnemyCharacter>(a));
+	}
 }
 
 // Called every frame
@@ -41,23 +59,22 @@ void ASurveillanceCamera::Tick(float DeltaTime)
 	if (bWaiting)
 		return;
 
-	if(cameraHead->GetRelativeRotation().Yaw > turnRange )
+	if(cameraHead->GetRelativeRotation().Yaw > startAngle + turnRange )
 	{
-		cameraHead->SetRelativeRotation(FRotator(0,turnRange-1,0));
+		cameraHead->SetRelativeRotation(FRotator(0,startAngle+turnRange-0.1f,0));
 		GetWorld()->GetTimerManager().SetTimer(turnCooldownTH, this, &ASurveillanceCamera::TurnCamera, turnCooldown, false);
 		bWaiting = true;
 		return;
 	}
-	if (cameraHead->GetRelativeRotation().Yaw < -turnRange)
+	if (cameraHead->GetRelativeRotation().Yaw < startAngle - turnRange)
 	{
-		cameraHead->SetRelativeRotation(FRotator(0,-turnRange+1,0));
+		cameraHead->SetRelativeRotation(FRotator(0,startAngle-turnRange+0.1f,0));
 		GetWorld()->GetTimerManager().SetTimer(turnCooldownTH, this, &ASurveillanceCamera::TurnCamera, turnCooldown, false);
 		bWaiting = true;
 		return;
 	}
 	
-	cameraHead->SetRelativeRotation(FMath::RInterpConstantTo(cameraHead->GetRelativeRotation(), cameraHead->GetRelativeRotation() + targetRot, DeltaTime, turnSpeed));
-	
+	cameraHead->AddRelativeRotation(FRotator(0.f,DeltaTime*turnSpeed, 0.f));
 }
 
 bool ASurveillanceCamera::BeginInteraction_Implementation()
@@ -110,7 +127,7 @@ bool ASurveillanceCamera::LookatEnd_Implementation()
 
 void ASurveillanceCamera::TurnCamera()
 {
-	targetRot.Yaw *= -1;
+	turnSpeed *= -1;
 	bWaiting = false;
 }
 
@@ -127,5 +144,30 @@ void ASurveillanceCamera::HackOver()
 		
 
 	bLockInteraction = false;
+}
+
+void ASurveillanceCamera::PlayerCheck()
+{
+	if (IsValid(characterRef) && FVector::Dist(characterRef->GetActorLocation(), visionCone->GetComponentLocation()) < visionCone->GetRange())
+	{
+		float thing1 = abs(cameraHead->GetForwardVector().Dot(UKismetMathLibrary::GetDirectionUnitVector(visionCone->GetComponentLocation(),characterRef->GetActorLocation())));
+		float thing2 = visionCone->GetAngle() / 90.f;
+
+		APlayerCharacter* pchar = Cast<APlayerCharacter>(characterRef);
+		
+		if (thing1 < thing2 && IsValid(pchar) && !pchar->GetIsCloaked())
+		{
+			visionCone->SetAlertState(2);
+
+			for (AEnemyCharacter* e : enemies)
+			{
+				e->InvestigateCamera(characterRef->GetActorLocation());
+			}
+			
+			return;
+		}
+	}
+
+	visionCone->SetAlertState(0);
 }
 

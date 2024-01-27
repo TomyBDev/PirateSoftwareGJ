@@ -20,6 +20,24 @@ class PIRATESOFTWAREGJ_API UCustomGameInstance : public UGameInstance
 public:
 	UCustomGameInstance();
 
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	FGraphicsSettingsStruct GetGraphicsSettings() const { return graphicsSettings; }
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	FGeneralSettingsStruct GetGeneralSettings() const { return generalSettings; }
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	FAudioSettingsStruct GetAudioSettings() const { return audioSettings; }
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	bool IsLevel1Complete() const { return bLevel1Complete; }
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	bool IsLevel2Complete() const { return bLevel2Complete; }
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	bool IsLevel3Complete() const { return bLevel3Complete; }
+
 	bool GetHasLoaded() const { return bHasLoaded; }
 
 	void SetMenuPCRef(AMenuPlayerController* menuPCRef) { menuPlayerController = menuPCRef; }
@@ -31,7 +49,7 @@ protected:
 private:
 
 	UFUNCTION(BlueprintCallable)
-	void SaveGameData(FPlayerStats pStats, FGraphicsSettingsStruct graphics, FGameplaySettingsStruct gameplay, FAudioSettingsStruct audio);
+	void SaveGameData(FGraphicsSettingsStruct graphics, FGeneralSettingsStruct general, FAudioSettingsStruct audio);
 
 	void SaveComplete_Delegate(const FString& slotName, const int32 userIndex, bool bSuccess);
 
@@ -42,14 +60,23 @@ private:
 	UPROPERTY()
 	FPlayerStats playerStats;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintGetter=GetGraphicsSettings)
 	FGraphicsSettingsStruct graphicsSettings;
 
 	UPROPERTY()
-	FGameplaySettingsStruct gameplaySettings;
+	FGeneralSettingsStruct generalSettings;
 
 	UPROPERTY()
 	FAudioSettingsStruct audioSettings;
+
+	UPROPERTY(BlueprintGetter=IsLevel1Complete)
+	bool bLevel1Complete = false;
+
+	UPROPERTY(BlueprintGetter=IsLevel2Complete)
+	bool bLevel2Complete = false;
+
+	UPROPERTY(BlueprintGetter=IsLevel3Complete)
+	bool bLevel3Complete = false;
 
 	UPROPERTY()
 	AMenuPlayerController* menuPlayerController;

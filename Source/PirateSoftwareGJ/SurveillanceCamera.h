@@ -6,6 +6,7 @@
 #include "InteractableActor.h"
 #include "SurveillanceCamera.generated.h"
 
+class AEnemyCharacter;
 class UArrowComponent;
 
 UCLASS()
@@ -47,6 +48,8 @@ private:
 
 	void HackOver();
 
+	void PlayerCheck();;
+
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* cameraHead;
 	
@@ -62,13 +65,28 @@ private:
 	UPROPERTY(EditAnywhere, Category="Camera Settings")
 	float turnCooldown = 2.5f;
 
+	UPROPERTY(EditAnywhere, Category="Camera Settings")
+	float startAngle = 0.f;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<AActor> enemyActor;
+
+	TArray<AEnemyCharacter*> enemies;
+	
 	bool bWaiting = false;
 	
 	FTimerHandle turnCooldownTH;
 
-	FRotator targetRot, startRot;
+	// Disabled Timer
 
 	FTimerHandle disabledTH;
 
 	float disabledTime = 5.f;
+
+	// Detection Loop
+
+	FTimerHandle detectionTH;
+
+	ACharacter* characterRef;
+	
 };

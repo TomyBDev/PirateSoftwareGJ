@@ -106,3 +106,13 @@ void AEnemyAIController::SetPerceptionAngle(float angle)
 	if (IsValid(sightConfig))
 		sightConfig->PeripheralVisionAngleDegrees = angle;
 }
+
+void AEnemyAIController::SetBBObj(FName bbName, AActor* actor)
+{
+	GetBlackboardComponent()->SetValueAsObject(bbName, actor);
+}
+
+void AEnemyAIController::SetBBVec(FName bbName, FVector vec)
+{
+	GetBlackboardComponent()->SetValueAsVector(bbName, vec);
+}

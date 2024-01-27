@@ -3,7 +3,9 @@
 
 #include "MenuGameMode.h"
 
+#include "CustomPlayerController.h"
 #include "CustomSaveGame.h"
+
 
 AMenuGameMode::AMenuGameMode()
 {

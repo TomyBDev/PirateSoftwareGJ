@@ -3,12 +3,15 @@
 
 #include "PlayerCharacter.h"
 
+#include "CustomGameInstance.h"
 #include "EnhancedInputSubsystems.h"
+#include "MainGameModeBase.h"
 #include "StaminaComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
@@ -54,7 +57,13 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	UCustomGameInstance* cgi = Cast<UCustomGameInstance>(GetGameInstance());
+	if(IsValid(cgi))
+	{
+		sensitivity = cgi->GetGeneralSettings().sensitivity / 5.f;
+	}
+		
 }
 
 // Called every frame
@@ -71,6 +80,25 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 	//Hypothetically if the player needs some super specific input, we could put it here.
 
+}
+
+void APlayerCharacter::HitPlayer()
+{
+	if (hp > 0)
+	{
+		hp--;
+		if (hp <= 0)
+		{
+			AMainGameModeBase* mainGM = Cast<AMainGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
+			if (IsValid(mainGM))
+			{
+				mainGM->PlayerDied();
+				Tags.Empty();
+				DisableInput(UGameplayStatics::GetPlayerController(GetWorld(), 0));
+				SetActorEnableCollision(false);
+			}
+		}
+	}
 }
 
 void APlayerCharacter::Move_Implementation(const FInputActionValue& Value)
@@ -105,8 +133,8 @@ void APlayerCharacter::Look_Implementation(const FInputActionValue& Value)
 		return;
 
 	// add yaw and pitch input to controller
-	AddControllerPitchInput(LookAxisVector.Y);
-	AddControllerYawInput(LookAxisVector.X);
+	AddControllerPitchInput(LookAxisVector.Y * sensitivity);
+	AddControllerYawInput(LookAxisVector.X * sensitivity);
 
 	FRotator rot = GetController()->GetControlRotation();;
 	GetController()->SetControlRotation(FRotator(FMath::ClampAngle(FMath::UnwindDegrees(rot.Pitch), -30.f, 30.f), rot.Yaw, rot.Roll));
@@ -130,10 +158,15 @@ void APlayerCharacter::StopSprint_Implementation()
 
 void APlayerCharacter::Attack1_Implementation()
 {
-	cube->SetMaterial(0, translucentMat);
-	Tags.RemoveAt(0);
-	//ToDo: Fix AI detection of player round cloaking.
-	GetWorld()->GetTimerManager().SetTimer(cloakTH, this, &APlayerCharacter::EndCloak, cloakTime, false);
+	if (!bCloaked)
+	{
+		cube->SetMaterial(0, translucentMat);
+		Tags.RemoveAt(0);
+		bCloaked = true;
+		//ToDo: Fix AI detection of player round cloaking.
+		GetWorld()->GetTimerManager().SetTimer(cloakTH, this, &APlayerCharacter::EndCloak, cloakTime, false);
+	}
+
 }
 
 void APlayerCharacter::Attack2_Implementation()
@@ -156,4 +189,5 @@ void APlayerCharacter::EndCloak()
 	//ToDo: Fix AI detection of player round cloaking.
 	cube->SetMaterial(0, normalMat);
 	Tags.Add("Player");
+	bCloaked = false;
 }
