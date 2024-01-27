@@ -54,10 +54,10 @@ private:
 	UPROPERTY(BlueprintGetter=GetGraphicsSettings)
 	FGraphicsSettingsStruct graphicsSettings;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintGetter = GetGeneralSettings)
 	FGeneralSettingsStruct generalSettings;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintGetter = GetAudioSettings)
 	FAudioSettingsStruct audioSettings;
 
 	UPROPERTY()

@@ -38,6 +38,11 @@ void UCustomGameInstance::SaveGameData(FGraphicsSettingsStruct graphics, FGenera
 		
 	}
 
+
+	graphicsSettings = graphics;
+	generalSettings = general;
+	audioSettings = audio;
+
 	if (IsValid(menuPlayerController))
 		menuPlayerController->AddSaveWidget();
 }
