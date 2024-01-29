@@ -27,17 +27,20 @@ UVisionConeComponent::UVisionConeComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 	
+	// Get vision cone material interface and store it so we can create dynamic material later.
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> visionConeMaterial(TEXT("/Game/Materials/VisionCone/MatInst_VisionCone.MatInst_VisionCone"));
+	if (visionConeMaterial.Succeeded())
+		visionConeMaterialInterface = visionConeMaterial.Object;
 }
-
 
 // Called when the game starts
 void UVisionConeComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
+	// Match the ai perception range and view angle to the vision cone visual representation.
+	// TODO replace perception with own system.
 	ACharacter* character = Cast<ACharacter>(GetOwner());
 	if (IsValid(character))
 	{
@@ -50,19 +53,58 @@ void UVisionConeComponent::BeginPlay()
 		}
 	}
 
+	// Create dynamic material for vision cone.
+	dynamicVisionConeMat = UMaterialInstanceDynamic::Create(visionConeMaterialInterface, this);
 	
+	// Construct initial simple realtime mesh.
+	ConstructSimpleRTMesh();
+}
+
+// Called every frame
+void UVisionConeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	// Update Mesh
+	UpdateSimpleRTMesh();
+}
+
+void UVisionConeComponent::SetAlertState(EAlertState alertState)
+{
+	if (!IsValid(dynamicVisionConeMat))
+		return;
+	
+	switch (alertState) {
+		
+		case EAlertState::NOTARGET:
+			dynamicVisionConeMat->SetVectorParameterValue(TEXT("Color"), visionConeColor);
+			break;
+			
+		case EAlertState::ALERT:
+			dynamicVisionConeMat->SetVectorParameterValue(TEXT("Color"), visionConeAlertColor);
+			break;
+		
+		case EAlertState::HASTARGET:
+			dynamicVisionConeMat->SetVectorParameterValue(TEXT("Color"), visionConeChaseColor);
+			break;
+
+		default:
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15, FColor::Red, TEXT("Invalid Alert State."));
+	}
+}
+
+void UVisionConeComponent::ConstructSimpleRTMesh()
+{
 	// Initialize the simple mesh
 	RealtimeMesh = InitializeRealtimeMesh<URealtimeMeshSimple>();
-	
-	// This example create 3 rectangular prisms, one on each axis, with 2 of them grouped in the same vertex buffers, but with different sections
-	// This allows for setting up separate materials even if sections share a single set of buffers
 
 	// Setup the two material slots
 	RealtimeMesh->SetupMaterialSlot(0, "PrimaryMaterial");
 
-	if (IsValid(visionConeMat))
+	if (IsValid(dynamicVisionConeMat))
 	{
-		SetMaterial(0, visionConeMat);
+		SetMaterial(0, dynamicVisionConeMat);
 	}
 
 	{	// Create a basic single section
@@ -84,44 +126,17 @@ void UVisionConeComponent::BeginPlay()
 
 		RealtimeMesh->UpdateSectionConfig(FRealtimeMeshSectionKey::CreateForPolyGroup(SectionGroupKey, 1), VisibleConfig);
 	}
-	
 }
 
-
-// Called every frame
-void UVisionConeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+void UVisionConeComponent::UpdateSimpleRTMesh()
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-
 	TArray<FVector> points = GetPoints();
 
 	for (int i = 0; i < points.Num(); ++i)
-	{
 		meshData.Positions[i] = points[i];
-	}
-
+	
 	RealtimeMesh->UpdateSectionGroup(SectionGroupKey, meshData);
 }
-
-void UVisionConeComponent::SetAlertState(int state)
-{
-	
-	if (IsValid(visionConeMat) && state == 0)
-	{
-		SetMaterial(0, visionConeMat);
-	}
-	else if (IsValid(visionConeAlertMat) && state == 1)
-	{
-		SetMaterial(0, visionConeAlertMat);
-	}
-	else if (IsValid(visionConeChaseMat) && state == 2)
-	{
-		SetMaterial(0, visionConeChaseMat);
-	}
-}
-
 
 TArray<FVector> UVisionConeComponent::GetPoints()
 {

@@ -78,7 +78,7 @@ void AEnemyAIController::OnTargetDetected(AActor* Actor, FAIStimulus const stimu
 		
 		UVisionConeComponent* visionCone = enemy->GetVisionConeComponent();
 		if (IsValid(visionCone))
-			visionCone->SetAlertState(2);
+			visionCone->SetAlertState(EAlertState::HASTARGET);
 		return;
 	}
 
@@ -92,7 +92,7 @@ void AEnemyAIController::OnTargetDetected(AActor* Actor, FAIStimulus const stimu
 		
 	UVisionConeComponent* visionCone = enemy->GetVisionConeComponent();
 	if (IsValid(visionCone))
-		visionCone->SetAlertState(1);
+		visionCone->SetAlertState(EAlertState::ALERT);
 }
 
 void AEnemyAIController::SetPerceptionRange(float range)

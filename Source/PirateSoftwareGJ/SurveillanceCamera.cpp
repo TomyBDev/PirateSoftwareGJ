@@ -157,7 +157,7 @@ void ASurveillanceCamera::PlayerCheck()
 		
 		if (thing1 < thing2 && IsValid(pchar) && !pchar->GetIsCloaked())
 		{
-			visionCone->SetAlertState(2);
+			visionCone->SetAlertState(EAlertState::HASTARGET);
 
 			for (AEnemyCharacter* e : enemies)
 			{
@@ -168,6 +168,6 @@ void ASurveillanceCamera::PlayerCheck()
 		}
 	}
 
-	visionCone->SetAlertState(0);
+	visionCone->SetAlertState(EAlertState::NOTARGET);
 }
 

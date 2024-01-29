@@ -8,45 +8,40 @@
 #include "VisionConeComponent.generated.h"
 
 
+enum class EAlertState : uint8;
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PIRATESOFTWAREGJ_API UVisionConeComponent : public URealtimeMeshComponent
 {
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
 	UVisionConeComponent();
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void SetAlertState(int state);
+	/** Sets the alert state of the vision cone. */
+	void SetAlertState(EAlertState alertState);
 
 	float GetRange() const { return distance; }
 	
 	float GetAngle() const { return angle; }
 
 private:
+
+	void ConstructSimpleRTMesh();
+
+	void UpdateSimpleRTMesh();
 	
 	TArray<FVector> GetPoints();
 
 	void AppendTriangleMesh(struct FRealtimeMeshSimpleMeshData& MeshData, TArray<FVector> Points, int32 NewMaterialGroup);
 	
 	struct FRealtimeMeshSectionConfig OnAddSectionToPolyGroup(int32 PolyGroupIndex);
-	
-	UPROPERTY(EditAnywhere, Category="Vision Cone")
-	UMaterialInterface* visionConeMat;
-	
-	UPROPERTY(EditAnywhere, Category="Vision Cone")
-	UMaterialInterface* visionConeAlertMat;
-	
-	UPROPERTY(EditAnywhere, Category="Vision Cone")
-	UMaterialInterface* visionConeChaseMat;
 
 	UPROPERTY(EditAnywhere, Category="Vision Cone")
 	int resolution = 12;
@@ -61,5 +56,30 @@ private:
 	
 	FRealtimeMeshSectionGroupKey SectionGroupKey;
 
+	UPROPERTY()
 	class URealtimeMeshSimple* RealtimeMesh;
+
+	UPROPERTY()
+	UMaterialInterface* visionConeMaterialInterface;
+
+	UPROPERTY()
+	UMaterialInstanceDynamic* dynamicVisionConeMat;
+
+	
+
+	UPROPERTY(EditAnywhere, Category="Material Color")
+	FVector visionConeColor = FVector(0.f, 0.847059f, 0.094118f); 
+
+	UPROPERTY(EditAnywhere, Category="Material Color")
+	FVector visionConeAlertColor = FVector(0.847059f, 0.414904, 0.f); 
+
+	UPROPERTY(EditAnywhere, Category="Material Color")
+	FVector visionConeChaseColor = FVector(0.847059f, 0.f, 0.032863f); 
+};
+
+enum class EAlertState : uint8 {
+	NOTARGET = 0		UMETA(DisplayName="No Target"),
+	ALERT = 1			UMETA(DisplayName="Alert"),
+	HASTARGET = 2		UMETA(DisplayName="Has Target"),
+	MAX	= 3				UMETA(Hidden)
 };

@@ -39,7 +39,7 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
 void AEnemyCharacter::InvestigateCamera(FVector loc)
 {
-	visionCone->SetAlertState(1);
+	visionCone->SetAlertState(EAlertState::ALERT);
 	
 	AEnemyAIController* aiController = Cast<AEnemyAIController>(GetController());
 	if (IsValid(aiController))
@@ -48,7 +48,7 @@ void AEnemyCharacter::InvestigateCamera(FVector loc)
 
 void AEnemyCharacter::InvestigateDistraction(AActor* actor)
 {
-	visionCone->SetAlertState(1);
+	visionCone->SetAlertState(EAlertState::ALERT);
 	
 	AEnemyAIController* aiController = Cast<AEnemyAIController>(GetController());
 	if (IsValid(aiController))
