@@ -58,22 +58,24 @@ void UVisionConeComponent::BeginPlay()
 	
 	// Construct initial simple realtime mesh.
 	ConstructSimpleRTMesh();
+
+	// Update Every Interval
+	GetWorld()->GetTimerManager().SetTimer(updateMeshTH, this, &UVisionConeComponent::UpdateSimpleRTMesh, 0.16f, true);
 }
 
 // Called every frame
 void UVisionConeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// Update Mesh
-	UpdateSimpleRTMesh();
 }
 
 void UVisionConeComponent::SetAlertState(EAlertState alertState)
 {
+	// Dynamic material is ded.
 	if (!IsValid(dynamicVisionConeMat))
 		return;
-	
+
+	// Update the color of the dynamic material instance, to match the state.
 	switch (alertState) {
 		
 		case EAlertState::NOTARGET:
@@ -99,9 +101,10 @@ void UVisionConeComponent::ConstructSimpleRTMesh()
 	// Initialize the simple mesh
 	RealtimeMesh = InitializeRealtimeMesh<URealtimeMeshSimple>();
 
-	// Setup the two material slots
+	// Setup the material slot for the vision cone.
 	RealtimeMesh->SetupMaterialSlot(0, "PrimaryMaterial");
 
+	// Bind the dynamic material we created.
 	if (IsValid(dynamicVisionConeMat))
 	{
 		SetMaterial(0, dynamicVisionConeMat);
@@ -109,86 +112,99 @@ void UVisionConeComponent::ConstructSimpleRTMesh()
 
 	{	// Create a basic single section
 		
-
-		// This just adds a simple box, you can instead create your own mesh data
-		AppendTriangleMesh(meshData, GetPoints(), 1);
+		// Generate initial cone points.
+		for (int i = 0; i < resolution+1; ++i)
+			conePoints.Add(FVector(0,0,0));	
 		
-		// Create a single section, with its own dedicated section group
+		GetPoints(conePoints);
 
-		SectionGroupKey = FRealtimeMeshSectionGroupKey::Create(0, FName("TestTripleBox"));
+		// Generate and store the vision cones triangle mesh data.
+		AppendTriangleMesh(meshData, 1);
+		
+		// Creates a group for the mesh data (Not sure if needed as we only have one group, but it works i guess).
+		SectionGroupKey = FRealtimeMeshSectionGroupKey::Create(0, FName("VisionCone"));
 		RealtimeMesh->CreateSectionGroup(SectionGroupKey, meshData);
 
 		auto SectionGroup = RealtimeMesh->GetMeshData()->GetSectionGroupAs<FRealtimeMeshSectionGroupSimple>(SectionGroupKey);
 		SectionGroup->SetPolyGroupSectionHandler(FRealtimeMeshPolyGroupConfigHandler::CreateUObject(this, &UVisionConeComponent::OnAddSectionToPolyGroup));
 
+		// Create config for mesh.
 		FRealtimeMeshSectionConfig VisibleConfig;
 		VisibleConfig.bIsVisible = true;
 
+		// Update the mesh with the mesh data we created.
 		RealtimeMesh->UpdateSectionConfig(FRealtimeMeshSectionKey::CreateForPolyGroup(SectionGroupKey, 1), VisibleConfig);
 	}
 }
 
 void UVisionConeComponent::UpdateSimpleRTMesh()
 {
-	TArray<FVector> points = GetPoints();
+	// Send out ray casts to get the vision cone shape outline points.
+	if (GetPoints(conePoints))
+	{
+		// For each outline point, update the vertex point in the mesh data.
+		for (int i = 0; i < conePoints.Num(); ++i)
+			meshData.Positions[i] = conePoints[i];
 
-	for (int i = 0; i < points.Num(); ++i)
-		meshData.Positions[i] = points[i];
-	
-	RealtimeMesh->UpdateSectionGroup(SectionGroupKey, meshData);
+		// Update 
+		RealtimeMesh->UpdateSectionGroup(SectionGroupKey, meshData);
+
+		GEngine->AddOnScreenDebugMessage(-1, 0.16f, FColor::Red, TEXT("Updating rt mesh!"));
+	}
 }
 
-TArray<FVector> UVisionConeComponent::GetPoints()
+bool UVisionConeComponent::GetPoints(TArray<FVector>& outPoints)
 {
-
-	UVisionConeComponent* visCone = GetOwner()->GetComponentByClass<UVisionConeComponent>();
+	bool bShouldUpdate = false;
 	
 	FHitResult hit;
 
-	TArray<FVector> points;
-
-	const FVector startLoc = visCone->GetComponentLocation();
+	const FVector startLoc = GetComponentLocation();
 	const float angSegment = angle / resolution;
 	float ang = -angle / 2.f;
 
-	points.Add({0,0,0});
-
 	for (int i = 0; i < resolution; ++i)
 	{
-		FVector endLoc = startLoc + (UKismetMathLibrary::RotateAngleAxis(visCone->GetForwardVector(), ang,
+		FVector endLoc = startLoc + (UKismetMathLibrary::RotateAngleAxis(GetForwardVector(), ang,
 			FVector(0,0,1)) * distance);
 
 		GetWorld()->LineTraceSingleByChannel(hit, startLoc, endLoc, ECC_Visibility);
 
+		FVector point;
+		
 		if (hit.bBlockingHit)
-		{
-			points.Add(UKismetMathLibrary::InverseTransformLocation(visCone->GetComponentTransform(),hit.Location));
-		}
+			point = UKismetMathLibrary::InverseTransformLocation(GetComponentTransform(),hit.Location);
 		else
+		
+			point = UKismetMathLibrary::InverseTransformLocation(GetComponentTransform(),endLoc);
+		
+		
+		if (point != outPoints[i+1])
 		{
-			points.Add(UKismetMathLibrary::InverseTransformLocation(visCone->GetComponentTransform(),endLoc));
+			outPoints[i+1] = point;
+			bShouldUpdate = true;
 		}
 		
 		ang += angSegment;
 	}
-	return points;
+	return bShouldUpdate;
 }
 
-void UVisionConeComponent::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, TArray<FVector> Points, int32 NewMaterialGroup)
+void UVisionConeComponent::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, int32 NewMaterialGroup)
 {
 	// Generate verts
 	TArray<FVector> BoxVerts;
 
-	for (FVector p : Points)
+	for (FVector p : conePoints)
 	{
 		BoxVerts.Add(FTransform::Identity.TransformPosition(p));
 	}
 
-	const int n = Points.Num() - 2;
+	const int n = conePoints.Num() - 2;
 	
 	// Generate triangles (from quads)
 	const int32 StartVertex = MeshData.Positions.Num();
-	const int32 NumVerts = Points.Num(); 
+	const int32 NumVerts = conePoints.Num(); 
 	const int32 NumIndices = n * 3;
 
 	// Make sure the secondary arrays are the same length, zeroing them if necessary

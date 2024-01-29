@@ -37,9 +37,9 @@ private:
 
 	void UpdateSimpleRTMesh();
 	
-	TArray<FVector> GetPoints();
+	bool GetPoints(TArray<FVector>& outPoints);
 
-	void AppendTriangleMesh(struct FRealtimeMeshSimpleMeshData& MeshData, TArray<FVector> Points, int32 NewMaterialGroup);
+	void AppendTriangleMesh(struct FRealtimeMeshSimpleMeshData& MeshData, int32 NewMaterialGroup);
 	
 	struct FRealtimeMeshSectionConfig OnAddSectionToPolyGroup(int32 PolyGroupIndex);
 
@@ -65,8 +65,6 @@ private:
 	UPROPERTY()
 	UMaterialInstanceDynamic* dynamicVisionConeMat;
 
-	
-
 	UPROPERTY(EditAnywhere, Category="Material Color")
 	FVector visionConeColor = FVector(0.f, 0.847059f, 0.094118f); 
 
@@ -74,7 +72,12 @@ private:
 	FVector visionConeAlertColor = FVector(0.847059f, 0.414904, 0.f); 
 
 	UPROPERTY(EditAnywhere, Category="Material Color")
-	FVector visionConeChaseColor = FVector(0.847059f, 0.f, 0.032863f); 
+	FVector visionConeChaseColor = FVector(0.847059f, 0.f, 0.032863f);
+
+		
+	TArray<FVector> conePoints;
+
+	FTimerHandle updateMeshTH;
 };
 
 enum class EAlertState : uint8 {
