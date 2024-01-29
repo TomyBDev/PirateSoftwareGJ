@@ -22,6 +22,12 @@ protected:
 public:
 	virtual void SetupInputComponent() override;
 
+	virtual void Tick(float DeltaTime) override;
+
+	void SetPlayerDied();
+	
+	void SetPlayerWon();
+
 private:
 
 	UFUNCTION()
@@ -49,7 +55,15 @@ private:
 	void Attack3();
 
 	UFUNCTION()
-	void Interact();
+	void BeginInteract();
+
+	UFUNCTION()
+	void EndInteract();
+
+	UFUNCTION()
+	void InteractCancelled();
+
+	void GetLookatActor();
 	
 	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
@@ -71,19 +85,33 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* SprintAction;
 
-	/** Move Input Action */
+	/** Attack1 Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* Attack1Action;
 
-	/** Look Input Action */
+	/** Attack2 Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* Attack2Action;
 
-	/** Jump Input Action */
+	/** Attack3 Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* Attack3Action;
 
-	/** Sprint Input Action */
+	/** Interaction Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractionAction;
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> diedWidgetClass;
+
+	UPROPERTY()
+	UUserWidget* diedWidget;
+	
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<UUserWidget> winWidgetClass;
+
+	UPROPERTY()
+	UUserWidget* winWidget;
+	
+	AActor* lookatActor = nullptr;
 };

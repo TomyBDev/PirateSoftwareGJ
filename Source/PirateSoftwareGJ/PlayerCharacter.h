@@ -30,6 +30,19 @@ public:
 	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
 	class UStaminaComponent* GetStaminaComponent() const { return staminaComp; }
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void Ability1();
+
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void Ability2();
+
+	bool GetIsCloaked() const { return bCloaked; }
+
+	void HitPlayer();
+
+	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
+	int GetHP() const { return hp; }
 
 protected:
 	virtual void Move_Implementation(const FInputActionValue& Value) override;
@@ -52,15 +65,39 @@ protected:
 
 private:
 
+	void EndCloak();
+
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class USpringArmComponent* sprintArm;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	
 	class UCameraComponent* camera;
+	
+	/** Cube */
+	UPROPERTY(EditAnywhere)
+	class UStaticMeshComponent* cube;
 	
 	/** Stamina Component. */
 	UPROPERTY(EditAnywhere, Category = "Stamina Component", BlueprintGetter = GetStaminaComponent)
 	class UStaminaComponent* staminaComp;
+
+	UPROPERTY(EditAnywhere)
+	UMaterial* normalMat;
+	
+	UPROPERTY(EditAnywhere)
+	UMaterial* translucentMat;
+
+	float sensitivity = 1.f;
+
+	UPROPERTY(BlueprintGetter=GetHP)
+	int hp = 3;
+	
+	FTimerHandle cloakTH;
+
+	float cloakTime = 5.f;
+
+	bool bCloaked = false;
 };

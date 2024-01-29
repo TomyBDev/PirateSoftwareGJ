@@ -3,6 +3,9 @@
 
 #include "BTTask_ClearNode.h"
 
+#include "AIController.h"
+#include "EnemyCharacter.h"
+#include "VisionConeComponent.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 UBTTask_ClearNode::UBTTask_ClearNode()
@@ -15,6 +18,14 @@ EBTNodeResult::Type UBTTask_ClearNode::ExecuteTask(UBehaviorTreeComponent& Owner
 	Super::ExecuteTask(OwnerComp, NodeMemory);
 
 	OwnerComp.GetBlackboardComponent()->ClearValue(GetSelectedBlackboardKey());
+
+	AEnemyCharacter* enemy = Cast<AEnemyCharacter>(OwnerComp.GetAIOwner()->GetPawn());
+	if (!IsValid(enemy))
+		return EBTNodeResult::Succeeded;
+		
+	UVisionConeComponent* visionCone = enemy->GetVisionConeComponent();
+	if (IsValid(visionCone))
+		visionCone->SetAlertState(0);
 
 	return EBTNodeResult::Succeeded;
 }

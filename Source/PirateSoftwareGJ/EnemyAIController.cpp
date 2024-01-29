@@ -3,6 +3,8 @@
 
 #include "EnemyAIController.h"
 
+#include "EnemyCharacter.h"
+#include "VisionConeComponent.h"
 #include "Perception/AIPerceptionComponent.h"
 #include "Perception/AISenseConfig_Sight.h"
 #include "BehaviorTree/BlackboardComponent.h"
@@ -69,12 +71,28 @@ void AEnemyAIController::OnTargetDetected(AActor* Actor, FAIStimulus const stimu
 	{
 		// Chase Player
 		GetBlackboardComponent()->SetValueAsObject(TEXT("PlayerRef"), Actor);
+
+		AEnemyCharacter* enemy = Cast<AEnemyCharacter>(GetPawn());
+		if (!IsValid(enemy))
+			return;
+		
+		UVisionConeComponent* visionCone = enemy->GetVisionConeComponent();
+		if (IsValid(visionCone))
+			visionCone->SetAlertState(2);
 		return;
 	}
 
 	// Lost track of player
 	GetBlackboardComponent()->SetValueAsVector(TEXT("LastKnownLocation"), Actor->GetActorLocation());
 	GetBlackboardComponent()->ClearValue(TEXT("PlayerRef"));
+
+	AEnemyCharacter* enemy = Cast<AEnemyCharacter>(GetPawn());
+	if (!IsValid(enemy))
+		return;
+		
+	UVisionConeComponent* visionCone = enemy->GetVisionConeComponent();
+	if (IsValid(visionCone))
+		visionCone->SetAlertState(1);
 }
 
 void AEnemyAIController::SetPerceptionRange(float range)
@@ -87,4 +105,14 @@ void AEnemyAIController::SetPerceptionAngle(float angle)
 {
 	if (IsValid(sightConfig))
 		sightConfig->PeripheralVisionAngleDegrees = angle;
+}
+
+void AEnemyAIController::SetBBObj(FName bbName, AActor* actor)
+{
+	GetBlackboardComponent()->SetValueAsObject(bbName, actor);
+}
+
+void AEnemyAIController::SetBBVec(FName bbName, FVector vec)
+{
+	GetBlackboardComponent()->SetValueAsVector(bbName, vec);
 }

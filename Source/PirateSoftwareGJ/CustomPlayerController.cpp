@@ -8,11 +8,19 @@
 #include "Kismet/KismetSystemLibrary.h" 
 
 #include "PlayerInputInterface.h"
+#include "InteractionInterface.h"
+#include "Blueprint/UserWidget.h"
+
+#define COLLISION_INTERACTION ECC_GameTraceChannel1
 
 void ACustomPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Hide cursor since it was shown on the menu screens
+	SetShowMouseCursor(false);
+
+	// Add the mapping context.
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
@@ -41,9 +49,51 @@ void ACustomPlayerController::SetupInputComponent()
 		//Stop Sprint
 		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &ACustomPlayerController::StopSprint);
 		
-		//Jumping
+		//Attack1
 		EnhancedInputComponent->BindAction(Attack1Action, ETriggerEvent::Triggered, this, &ACustomPlayerController::Attack1);
+		
+		//Attack2
+		EnhancedInputComponent->BindAction(Attack2Action, ETriggerEvent::Triggered, this, &ACustomPlayerController::Attack2);
+		
+		//Begin Interact
+		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Started, this, &ACustomPlayerController::BeginInteract);
+		
+		//End Interact
+		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Triggered, this, &ACustomPlayerController::EndInteract);
+		
+		// Interact Cancelled
+		EnhancedInputComponent->BindAction(InteractionAction, ETriggerEvent::Canceled, this, &ACustomPlayerController::InteractCancelled);
+		
 	}
+}
+
+void ACustomPlayerController::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	GetLookatActor();
+}
+
+void ACustomPlayerController::SetPlayerDied()
+{
+	if (!IsValid(diedWidgetClass))
+		return;
+
+	diedWidget = CreateWidget(this, diedWidgetClass);
+	
+	if (IsValid(diedWidget))
+		diedWidget->AddToViewport(100);
+}
+
+void ACustomPlayerController::SetPlayerWon()
+{
+	if (!IsValid(winWidgetClass))
+		return;
+
+	winWidget = CreateWidget(this, winWidgetClass);
+	
+	if (IsValid(winWidget))
+		winWidget->AddToViewport(100);
 }
 
 void ACustomPlayerController::Move(const FInputActionValue& Value)
@@ -110,10 +160,61 @@ void ACustomPlayerController::Attack3()
 	}
 }
 
-void ACustomPlayerController::Interact()
+void ACustomPlayerController::BeginInteract()
 {
-	APawn* pawn = GetPawn();
-	if (UKismetSystemLibrary::DoesImplementInterface(pawn, UPlayerInputInterface::StaticClass())) {				
-		IPlayerInputInterface::Execute_Interact(pawn);
+	if (IsValid(lookatActor) && UKismetSystemLibrary::DoesImplementInterface(lookatActor, UInteractionInterface::StaticClass())) {				
+		IInteractionInterface::Execute_BeginInteraction(lookatActor);
+	}
+}
+
+void ACustomPlayerController::EndInteract()
+{
+	if (IsValid(lookatActor) && UKismetSystemLibrary::DoesImplementInterface(lookatActor, UInteractionInterface::StaticClass())) {				
+		IInteractionInterface::Execute_EndInteraction(lookatActor);
+	}
+}
+
+void ACustomPlayerController::InteractCancelled()
+{
+	if (IsValid(lookatActor) && UKismetSystemLibrary::DoesImplementInterface(lookatActor, UInteractionInterface::StaticClass())) {				
+		IInteractionInterface::Execute_InteractionCancelled(lookatActor);
+	}
+}
+
+void ACustomPlayerController::GetLookatActor()
+{
+	FVector loc;
+	FRotator rot;
+	GetPlayerViewPoint(loc, rot);
+
+	
+	FVector startLoc = loc;
+	FVector endLoc = loc + (rot.Vector() * 5000.f);
+	FHitResult hit;
+	
+	GetWorld()->LineTraceSingleByChannel(hit, startLoc, endLoc, COLLISION_INTERACTION, FCollisionQueryParams::DefaultQueryParam);
+
+	if (hit.bBlockingHit)
+	{
+		if (IsValid(hit.GetActor()) && lookatActor == nullptr)
+		{
+			lookatActor = hit.GetActor();
+			
+			if (IsValid(lookatActor) && UKismetSystemLibrary::DoesImplementInterface(lookatActor, UInteractionInterface::StaticClass())) {				
+				IInteractionInterface::Execute_LookatBegin(lookatActor);
+			}
+		}
+
+		return;
+	}
+
+	if (IsValid(lookatActor))
+	{
+		
+		if (IsValid(lookatActor) && UKismetSystemLibrary::DoesImplementInterface(lookatActor, UInteractionInterface::StaticClass())) {				
+			IInteractionInterface::Execute_LookatEnd(lookatActor);
+		}
+
+		lookatActor = nullptr;
 	}
 }
