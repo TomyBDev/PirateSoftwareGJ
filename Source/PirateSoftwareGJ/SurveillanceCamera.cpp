@@ -84,7 +84,7 @@ bool ASurveillanceCamera::EndInteraction_Implementation()
 	if (Super::EndInteraction_Implementation())
 		return true;
 	
-	visionCone->SetHiddenInGame(true);
+	visionCone->SetDisabled(true);
 	SetActorTickEnabled(false);
 
 	GetWorld()->GetTimerManager().SetTimer(disabledTH, this, &ASurveillanceCamera::HackOver, disabledTime);
@@ -120,7 +120,7 @@ void ASurveillanceCamera::StartDetection_Implementation(AActor* otherActor)
 {
 	for (AEnemyCharacter* e : enemies)
 	{ // TODO pass player location.
-		e->InvestigateCamera(FVector(0,0,0));
+		e->InvestigateCamera(otherActor->GetActorLocation());
 	}
 
 	if(GEngine)
@@ -141,7 +141,7 @@ void ASurveillanceCamera::TurnCamera()
 
 void ASurveillanceCamera::HackOver()
 {
-	visionCone->SetHiddenInGame(false);
+	visionCone->SetDisabled(false);
 	SetActorTickEnabled(true);
 
 	if (IsValid(interactionWidget))

@@ -4,7 +4,6 @@
 #include "VisionConeComponent.h"
 
 #include "DetectionInterface.h"
-#include "EnemyAIController.h"
 #include "PlayerCharacter.h"
 #include "RealtimeMeshComponent.h"
 #include "RealtimeMeshSimple.h"
@@ -91,6 +90,12 @@ void UVisionConeComponent::SetAlertState(EAlertState alertState)
 	}
 }
 
+void UVisionConeComponent::SetDisabled(bool bDis)
+{
+	SetHiddenInGame(bDis);
+	bDisabled = bDis;
+}
+
 void UVisionConeComponent::ConstructSimpleRTMesh()
 {
 	// Initialize the simple mesh
@@ -134,6 +139,9 @@ void UVisionConeComponent::ConstructSimpleRTMesh()
 
 void UVisionConeComponent::UpdateSimpleRTMesh()
 {
+	if (bDisabled)
+		return;
+	
 	// Send out ray casts to get the vision cone shape outline points.
 	if (GetPoints(conePoints))
 	{
@@ -246,7 +254,7 @@ FRealtimeMeshSectionConfig UVisionConeComponent::OnAddSectionToPolyGroup(int32 P
 
 void UVisionConeComponent::PlayerDetection()
 {
-	if (!IsValid(playerRef))
+	if (!IsValid(playerRef) || bDisabled)
 		return;
 
 	// Get the distance to the player.

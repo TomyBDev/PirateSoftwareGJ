@@ -35,26 +35,3 @@ void AEnemyAIController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
-
-void AEnemyAIController::SetBBObj(FName bbName, AActor* actor)
-{
-	GetBlackboardComponent()->SetValueAsObject(bbName, actor);
-}
-
-void AEnemyAIController::SetBBVec(FName bbName, FVector vec)
-{
-	GetBlackboardComponent()->SetValueAsVector(bbName, vec);
-}
-
-void AEnemyAIController::StartDetection_Implementation(AActor* otherActor)
-{
-	// Chase Player
-	GetBlackboardComponent()->SetValueAsObject(TEXT("PlayerRef"), otherActor);
-}
-
-void AEnemyAIController::EndDetection_Implementation(AActor* otherActor)
-{
-	// Lost track of player
-	GetBlackboardComponent()->SetValueAsVector(TEXT("LastKnownLocation"), otherActor->GetActorLocation());
-	GetBlackboardComponent()->ClearValue(TEXT("PlayerRef"));
-}

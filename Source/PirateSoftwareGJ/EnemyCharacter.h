@@ -3,14 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DetectionInterface.h"
 #include "GameFramework/Character.h"
 #include "EnemyCharacter.generated.h"
 
+class AEnemyAIController;
 class ADistraction;
 class URealtimeMeshComponent;
 
 UCLASS()
-class PIRATESOFTWAREGJ_API AEnemyCharacter : public ACharacter
+class PIRATESOFTWAREGJ_API AEnemyCharacter : public ACharacter, public IDetectionInterface
 {
 	GENERATED_BODY()
 
@@ -33,6 +35,15 @@ public:
 	void InvestigateCamera(FVector loc);
 
 	void InvestigateDistraction(AActor* actor);
+
+	
+protected:
+	
+	/** Detection Interface. */
+
+	virtual void StartDetection_Implementation(AActor* otherActor) override;
+
+	virtual void EndDetection_Implementation(AActor* otherActor) override;
 	
 private:
 	
@@ -41,4 +52,6 @@ private:
 
 	UPROPERTY(EditAnywhere)
 	UVisionConeComponent* visionCone;
+
+	AEnemyAIController* aiController;
 };

@@ -30,6 +30,8 @@ public:
 	/** Sets the alert state of the vision cone. */
 	void SetAlertState(EAlertState alertState);
 
+	void SetDisabled(bool bDis);
+
 	float GetRange() const { return maxRange; }
 	
 	float GetAngle() const { return angle; }
@@ -112,6 +114,8 @@ private:
 	/** Misc. */
 
 	APlayerCharacter* playerRef;
+
+	bool bDisabled = false;
 };
 
 enum class EAlertState : uint8 {

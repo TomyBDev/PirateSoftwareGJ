@@ -4,15 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
-#include "DetectionInterface.h"
 #include "EnemyAIController.generated.h"
 
+class APlayerCharacter;
 struct FAIStimulus;
 /**
  * 
  */
 UCLASS()
-class PIRATESOFTWAREGJ_API AEnemyAIController : public AAIController, public IDetectionInterface
+class PIRATESOFTWAREGJ_API AEnemyAIController : public AAIController
 {
 	GENERATED_BODY()
 
@@ -30,17 +30,7 @@ public:
 	/** Run every frame. */
 	virtual void Tick(float DeltaTime) override;
 
-	UBlackboardComponent* GetBBComp() { return GetBlackboardComponent(); };
-
-	void SetBBVec(FName bbName, FVector vec);
-
-protected:
-
-	/** Detection Interface. */
-
-	virtual void StartDetection_Implementation(AActor* otherActor) override;
-
-	virtual void EndDetection_Implementation(AActor* otherActor) override;
+	UBlackboardComponent* GetBBComp() { return GetBlackboardComponent(); }
 	
 private:
 
