@@ -257,6 +257,13 @@ void UVisionConeComponent::PlayerDetection()
 	if (!IsValid(playerRef) || bDisabled)
 		return;
 
+	// Do visibility check on player. Otherwise player will be spotted through wall.
+	FHitResult hit;
+	GetWorld()->LineTraceSingleByChannel(hit, GetComponentLocation(), playerRef->GetActorLocation(), ECC_Visibility);
+	if (hit.GetActor() != playerRef)
+		return;
+	
+
 	// Get the distance to the player.
 	const float distance = FVector::Dist(playerRef->GetActorLocation(), GetComponentLocation());
 
