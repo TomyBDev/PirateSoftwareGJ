@@ -255,16 +255,16 @@ void UVisionConeComponent::PlayerDetection()
 	// If the player is not cloaked or in the max range.
 	if (!playerRef->GetIsCloaked() && distance < maxRange)
 	{
-		
-		const float componentDP = abs(GetForwardVector().RotateAngleAxis(90.,FVector(0,0,1)).Dot(UKismetMathLibrary::GetDirectionUnitVector(GetComponentLocation(),playerRef->GetActorLocation())));
-		const float playerDP = angle / 90.f;
+		const float componentDP = GetForwardVector().Dot(UKismetMathLibrary::GetDirectionUnitVector(GetComponentLocation(),playerRef->GetActorLocation()));
 
 		// If the player is in peripheral range or is in the angle specified for the max range.
-		if (distance < peripheralRange || componentDP < playerDP)
+		if (distance < peripheralRange || acos(componentDP) < FMath::DegreesToRadians(angle/2.f))
 		{
+			SetAlertState(EAlertState::HASTARGET);
+			
 			AActor* owner = GetOwner();
 			if (UKismetSystemLibrary::DoesImplementInterface(owner, UDetectionInterface::StaticClass())) {				
-				IDetectionInterface::Execute_StartDetection(owner);
+				IDetectionInterface::Execute_StartDetection(owner, playerRef);
 			}
 
 			bPlayerInRange = true;
@@ -275,12 +275,21 @@ void UVisionConeComponent::PlayerDetection()
 	// If player was previously in range and has left the come inform owner.
 	if (bPlayerInRange)
 	{
+		SetAlertState(EAlertState::ALERT);
+
+		GetWorld()->GetTimerManager().SetTimer(playerLostTH, this, &UVisionConeComponent::PlayerLost, losePlayerTime);
+		
 		AActor* owner = GetOwner();
 		if (UKismetSystemLibrary::DoesImplementInterface(owner, UDetectionInterface::StaticClass())) {				
-			IDetectionInterface::Execute_EndDetection(owner);
+			IDetectionInterface::Execute_EndDetection(owner, playerRef);
 		}
 
 		bPlayerInRange = false;
 	}
 	
+}
+
+void UVisionConeComponent::PlayerLost()
+{
+	SetAlertState(EAlertState::NOTARGET);
 }

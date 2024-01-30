@@ -4,6 +4,8 @@
 
 #include "DetectionInterface.generated.h"
 
+class APlayerCharacter;
+
 UINTERFACE(MinimalAPI)
 class UDetectionInterface : public UInterface
 {
@@ -18,12 +20,12 @@ public:
 
 	/** Start Detection */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void StartDetection();
-	virtual void StartDetection_Implementation() {}
+	void StartDetection(AActor* otherActor);
+	virtual void StartDetection_Implementation(AActor* otherActor) {}
 
 	/** End Detection */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Action")
-	void EndDetection();
-	virtual void EndDetection_Implementation() {}
+	void EndDetection(AActor* otherActor);
+	virtual void EndDetection_Implementation(AActor* otherActor) {}
 	
 };

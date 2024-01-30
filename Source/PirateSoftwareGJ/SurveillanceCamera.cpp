@@ -116,22 +116,19 @@ bool ASurveillanceCamera::LookatEnd_Implementation()
 	return false;
 }
 
-void ASurveillanceCamera::StartDetection_Implementation()
+void ASurveillanceCamera::StartDetection_Implementation(AActor* otherActor)
 {
 	for (AEnemyCharacter* e : enemies)
 	{ // TODO pass player location.
 		e->InvestigateCamera(FVector(0,0,0));
 	}
-	
-	visionCone->SetAlertState(EAlertState::HASTARGET);
 
 	if(GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Camera Sees Player!"));
 }
 
-void ASurveillanceCamera::EndDetection_Implementation()
+void ASurveillanceCamera::EndDetection_Implementation(AActor* otherActor)
 {
-	visionCone->SetAlertState(EAlertState::NOTARGET);
 	if(GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Camera can no longer See Player!"));
 }

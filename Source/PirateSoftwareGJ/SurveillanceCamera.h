@@ -49,9 +49,9 @@ protected:
 
 	/** Detection Interface. */
 
-	virtual void StartDetection_Implementation() override;
+	virtual void StartDetection_Implementation(AActor* otherActor) override;
 
-	virtual void EndDetection_Implementation() override;
+	virtual void EndDetection_Implementation(AActor* otherActor) override;
 	
 private:
 	UFUNCTION()

@@ -101,6 +101,13 @@ private:
 	 
 	FTimerHandle playerDetectionUpdateTH;
 
+	void PlayerLost();
+	
+	FTimerHandle playerLostTH;
+
+	UPROPERTY(EditAnywhere)
+	float losePlayerTime = 5.f;
+
 	
 	/** Misc. */
 

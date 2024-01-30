@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "DetectionInterface.h"
 #include "EnemyAIController.generated.h"
 
 struct FAIStimulus;
@@ -11,7 +12,7 @@ struct FAIStimulus;
  * 
  */
 UCLASS()
-class PIRATESOFTWAREGJ_API AEnemyAIController : public AAIController
+class PIRATESOFTWAREGJ_API AEnemyAIController : public AAIController, public IDetectionInterface
 {
 	GENERATED_BODY()
 
@@ -29,26 +30,26 @@ public:
 	/** Run every frame. */
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION()
-	void OnTargetDetected(AActor* Actor, FAIStimulus const stimulus);
-
-	void SetPerceptionRange(float range);
-
-	void SetPerceptionAngle(float angle);
-
-	void SetBBObj(FName bbName, AActor* actor);
+	UBlackboardComponent* GetBBComp() { return GetBlackboardComponent(); };
 
 	void SetBBVec(FName bbName, FVector vec);
+
+protected:
+
+	/** Detection Interface. */
+
+	virtual void StartDetection_Implementation(AActor* otherActor) override;
+
+	virtual void EndDetection_Implementation(AActor* otherActor) override;
 	
 private:
+
+	/** AI. */
 	
 	UPROPERTY(EditAnywhere)
 	UBehaviorTree* AIBehavior;
 
-	UPROPERTY(EditAnywhere)
-	UAIPerceptionComponent* perceptionComp;
+	/** Misc. */
 
-	UPROPERTY(EditAnywhere)
-	class UAISenseConfig_Sight* sightConfig;
-	
+	APlayerCharacter* playerRef;
 };
