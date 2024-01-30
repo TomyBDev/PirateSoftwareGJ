@@ -8,6 +8,9 @@
 #include "VisionConeComponent.generated.h"
 
 
+class APlayerCharacter;
+struct FRealtimeMeshSimpleMeshData;
+struct FRealtimeMeshSectionConfig;
 enum class EAlertState : uint8;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -27,11 +30,28 @@ public:
 	/** Sets the alert state of the vision cone. */
 	void SetAlertState(EAlertState alertState);
 
-	float GetRange() const { return distance; }
+	float GetRange() const { return maxRange; }
 	
 	float GetAngle() const { return angle; }
 
 private:
+
+	/** Vision Cone Settings */
+
+	UPROPERTY(EditAnywhere, Category="Vision Cone")
+	int resolution = 20;
+
+	UPROPERTY(EditAnywhere, Category="Vision Cone")
+	float maxRange = 500.f;
+
+	UPROPERTY(EditAnywhere, Category="Vision Cone")
+	float peripheralRange = 100.f;
+
+	UPROPERTY(EditAnywhere, Category="Vision Cone")
+	float angle = 45.f;
+	
+
+	/** Realtime Mesh. */
 
 	void ConstructSimpleRTMesh();
 
@@ -39,18 +59,9 @@ private:
 	
 	bool GetPoints(TArray<FVector>& outPoints);
 
-	void AppendTriangleMesh(struct FRealtimeMeshSimpleMeshData& MeshData, int32 NewMaterialGroup);
+	void AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, int32 NewMaterialGroup);
 	
-	struct FRealtimeMeshSectionConfig OnAddSectionToPolyGroup(int32 PolyGroupIndex);
-
-	UPROPERTY(EditAnywhere, Category="Vision Cone")
-	int resolution = 12;
-
-	UPROPERTY(EditAnywhere, Category="Vision Cone")
-	float distance = 200.f;
-
-	UPROPERTY(EditAnywhere, Category="Vision Cone")
-	float angle = 45.f;
+	FRealtimeMeshSectionConfig OnAddSectionToPolyGroup(int32 PolyGroupIndex);
 
 	FRealtimeMeshSimpleMeshData meshData;
 	
@@ -59,11 +70,12 @@ private:
 	UPROPERTY()
 	class URealtimeMeshSimple* RealtimeMesh;
 
-	UPROPERTY()
-	UMaterialInterface* visionConeMaterialInterface;
+	TArray<FVector> conePoints;
 
-	UPROPERTY()
-	UMaterialInstanceDynamic* dynamicVisionConeMat;
+	FTimerHandle updateMeshTH;
+
+	
+	/** Vision Cone Material */
 
 	UPROPERTY(EditAnywhere, Category="Material Color")
 	FVector visionConeColor = FVector(0.f, 0.847059f, 0.094118f); 
@@ -74,10 +86,25 @@ private:
 	UPROPERTY(EditAnywhere, Category="Material Color")
 	FVector visionConeChaseColor = FVector(0.847059f, 0.f, 0.032863f);
 
-		
-	TArray<FVector> conePoints;
+	UPROPERTY()
+	UMaterialInterface* visionConeMaterialInterface;
 
-	FTimerHandle updateMeshTH;
+	UPROPERTY()
+	UMaterialInstanceDynamic* dynamicVisionConeMat;
+
+	
+	/** Player Detection. */
+
+	void PlayerDetection();
+
+	bool bPlayerInRange = false;
+	 
+	FTimerHandle playerDetectionUpdateTH;
+
+	
+	/** Misc. */
+
+	APlayerCharacter* playerRef;
 };
 
 enum class EAlertState : uint8 {

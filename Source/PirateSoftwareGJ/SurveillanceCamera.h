@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DetectionInterface.h"
 #include "InteractableActor.h"
 #include "SurveillanceCamera.generated.h"
 
@@ -10,7 +11,7 @@ class AEnemyCharacter;
 class UArrowComponent;
 
 UCLASS()
-class PIRATESOFTWAREGJ_API ASurveillanceCamera : public AInteractableActor
+class PIRATESOFTWAREGJ_API ASurveillanceCamera : public AInteractableActor, public IDetectionInterface
 {
 	GENERATED_BODY()
 	
@@ -28,6 +29,9 @@ public:
 
 protected:
 
+	/** Interaction Interface. */
+
+	/** Begin Interaction */
 	virtual bool BeginInteraction_Implementation() override;
 
 	/** End Interaction */
@@ -41,14 +45,19 @@ protected:
 
 	/** Lookat End */
 	virtual bool LookatEnd_Implementation() override;
+
+
+	/** Detection Interface. */
+
+	virtual void StartDetection_Implementation() override;
+
+	virtual void EndDetection_Implementation() override;
 	
 private:
 	UFUNCTION()
 	void TurnCamera();
 
 	void HackOver();
-
-	void PlayerCheck();;
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* cameraHead;
@@ -86,7 +95,5 @@ private:
 	// Detection Loop
 
 	FTimerHandle detectionTH;
-
-	ACharacter* characterRef;
 	
 };

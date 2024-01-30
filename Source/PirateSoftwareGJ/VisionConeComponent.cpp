@@ -3,10 +3,13 @@
 
 #include "VisionConeComponent.h"
 
+#include "DetectionInterface.h"
 #include "EnemyAIController.h"
+#include "PlayerCharacter.h"
 #include "RealtimeMeshComponent.h"
 #include "RealtimeMeshSimple.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 static void ConvertToTriangles(TArray<int32>& Triangles, TArray<int32>& MaterialIndices, int32 Vert0, int32 Vert1, int32 Vert2, int32 NewMaterialGroup)
@@ -38,20 +41,9 @@ UVisionConeComponent::UVisionConeComponent()
 void UVisionConeComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	// Match the ai perception range and view angle to the vision cone visual representation.
-	// TODO replace perception with own system.
-	ACharacter* character = Cast<ACharacter>(GetOwner());
-	if (IsValid(character))
-	{
-		// ...
-		AEnemyAIController* ai = Cast<AEnemyAIController>(character->GetController());
-		if (IsValid(ai))
-		{
-			ai->SetPerceptionRange(distance);
-			ai->SetPerceptionAngle(angle/2.f);
-		}
-	}
+
+	// Get Player Reference
+	playerRef = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
 	// Create dynamic material for vision cone.
 	dynamicVisionConeMat = UMaterialInstanceDynamic::Create(visionConeMaterialInterface, this);
@@ -59,8 +51,11 @@ void UVisionConeComponent::BeginPlay()
 	// Construct initial simple realtime mesh.
 	ConstructSimpleRTMesh();
 
-	// Update Every Interval
+	// Update Mesh Every Interval
 	GetWorld()->GetTimerManager().SetTimer(updateMeshTH, this, &UVisionConeComponent::UpdateSimpleRTMesh, 0.16f, true);
+
+	// Update Mesh Every Interval
+	GetWorld()->GetTimerManager().SetTimer(playerDetectionUpdateTH, this, &UVisionConeComponent::PlayerDetection, 0.16f, true);
 }
 
 // Called every frame
@@ -148,8 +143,6 @@ void UVisionConeComponent::UpdateSimpleRTMesh()
 
 		// Update 
 		RealtimeMesh->UpdateSectionGroup(SectionGroupKey, meshData);
-
-		GEngine->AddOnScreenDebugMessage(-1, 0.16f, FColor::Red, TEXT("Updating rt mesh!"));
 	}
 }
 
@@ -166,7 +159,7 @@ bool UVisionConeComponent::GetPoints(TArray<FVector>& outPoints)
 	for (int i = 0; i < resolution; ++i)
 	{
 		FVector endLoc = startLoc + (UKismetMathLibrary::RotateAngleAxis(GetForwardVector(), ang,
-			FVector(0,0,1)) * distance);
+			FVector(0,0,1)) * maxRange);
 
 		GetWorld()->LineTraceSingleByChannel(hit, startLoc, endLoc, ECC_Visibility);
 
@@ -249,4 +242,45 @@ void UVisionConeComponent::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshD
 FRealtimeMeshSectionConfig UVisionConeComponent::OnAddSectionToPolyGroup(int32 PolyGroupIndex)
 {
 	return FRealtimeMeshSectionConfig(ERealtimeMeshSectionDrawType::Static, PolyGroupIndex);
+}
+
+void UVisionConeComponent::PlayerDetection()
+{
+	if (!IsValid(playerRef))
+		return;
+
+	// Get the distance to the player.
+	const float distance = FVector::Dist(playerRef->GetActorLocation(), GetComponentLocation());
+
+	// If the player is not cloaked or in the max range.
+	if (!playerRef->GetIsCloaked() && distance < maxRange)
+	{
+		
+		const float componentDP = abs(GetForwardVector().RotateAngleAxis(90.,FVector(0,0,1)).Dot(UKismetMathLibrary::GetDirectionUnitVector(GetComponentLocation(),playerRef->GetActorLocation())));
+		const float playerDP = angle / 90.f;
+
+		// If the player is in peripheral range or is in the angle specified for the max range.
+		if (distance < peripheralRange || componentDP < playerDP)
+		{
+			AActor* owner = GetOwner();
+			if (UKismetSystemLibrary::DoesImplementInterface(owner, UDetectionInterface::StaticClass())) {				
+				IDetectionInterface::Execute_StartDetection(owner);
+			}
+
+			bPlayerInRange = true;
+			return;
+		}
+	}
+
+	// If player was previously in range and has left the come inform owner.
+	if (bPlayerInRange)
+	{
+		AActor* owner = GetOwner();
+		if (UKismetSystemLibrary::DoesImplementInterface(owner, UDetectionInterface::StaticClass())) {				
+			IDetectionInterface::Execute_EndDetection(owner);
+		}
+
+		bPlayerInRange = false;
+	}
+	
 }

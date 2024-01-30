@@ -7,8 +7,6 @@
 #include "InteractWidget.h"
 #include "PlayerCharacter.h"
 #include "VisionConeComponent.h"
-#include "Components/ArrowComponent.h"
-#include "Components/BoxComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -33,10 +31,6 @@ ASurveillanceCamera::ASurveillanceCamera()
 void ASurveillanceCamera::BeginPlay()
 {
 	Super::BeginPlay();
-
-	characterRef = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-
-	GetWorld()->GetTimerManager().SetTimer(detectionTH, this, &ASurveillanceCamera::PlayerCheck, 0.166f, true);
 
 	cameraHead->SetRelativeRotation(FRotator(0.0f, startAngle, 0.0f));
 
@@ -104,7 +98,6 @@ bool ASurveillanceCamera::InteractionCancelled_Implementation()
 		return true;
 
 	return false;
-	
 }
 
 bool ASurveillanceCamera::LookatBegin_Implementation()
@@ -113,7 +106,6 @@ bool ASurveillanceCamera::LookatBegin_Implementation()
 		return true;
 
 	return false;
-	
 }
 
 bool ASurveillanceCamera::LookatEnd_Implementation()
@@ -122,7 +114,26 @@ bool ASurveillanceCamera::LookatEnd_Implementation()
 		return true;
 
 	return false;
+}
+
+void ASurveillanceCamera::StartDetection_Implementation()
+{
+	for (AEnemyCharacter* e : enemies)
+	{ // TODO pass player location.
+		e->InvestigateCamera(FVector(0,0,0));
+	}
 	
+	visionCone->SetAlertState(EAlertState::HASTARGET);
+
+	if(GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Camera Sees Player!"));
+}
+
+void ASurveillanceCamera::EndDetection_Implementation()
+{
+	visionCone->SetAlertState(EAlertState::NOTARGET);
+	if(GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Camera can no longer See Player!"));
 }
 
 void ASurveillanceCamera::TurnCamera()
@@ -141,33 +152,6 @@ void ASurveillanceCamera::HackOver()
 		interactionWidget->ZeroPercentage();
 		interactionWidget->SetComplete(false);
 	}
-		
-
+	
 	bLockInteraction = false;
 }
-
-void ASurveillanceCamera::PlayerCheck()
-{
-	if (IsValid(characterRef) && FVector::Dist(characterRef->GetActorLocation(), visionCone->GetComponentLocation()) < visionCone->GetRange())
-	{
-		float thing1 = abs(cameraHead->GetForwardVector().Dot(UKismetMathLibrary::GetDirectionUnitVector(visionCone->GetComponentLocation(),characterRef->GetActorLocation())));
-		float thing2 = visionCone->GetAngle() / 90.f;
-
-		APlayerCharacter* pchar = Cast<APlayerCharacter>(characterRef);
-		
-		if (thing1 < thing2 && IsValid(pchar) && !pchar->GetIsCloaked())
-		{
-			visionCone->SetAlertState(EAlertState::HASTARGET);
-
-			for (AEnemyCharacter* e : enemies)
-			{
-				e->InvestigateCamera(characterRef->GetActorLocation());
-			}
-			
-			return;
-		}
-	}
-
-	visionCone->SetAlertState(EAlertState::NOTARGET);
-}
-
