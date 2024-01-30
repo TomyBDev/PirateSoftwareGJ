@@ -8,6 +8,7 @@
 #include "DrawDebugHelpers.h"
 #include "EnemyAIController.h"
 #include "VisionConeComponent.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 
 // Sets default values
@@ -27,7 +28,8 @@ AEnemyCharacter::AEnemyCharacter()
 void AEnemyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	aiController = Cast<AEnemyAIController>(GetController());
 }
 
 // Called every frame
@@ -39,19 +41,33 @@ void AEnemyCharacter::Tick(float DeltaTime)
 
 void AEnemyCharacter::InvestigateCamera(FVector loc)
 {
-	visionCone->SetAlertState(1);
+	visionCone->SetAlertState(EAlertState::ALERT);
 	
-	AEnemyAIController* aiController = Cast<AEnemyAIController>(GetController());
 	if (IsValid(aiController))
-		aiController->SetBBVec(TEXT("LastKnownLocation"), loc);
+		aiController->GetBBComp()->SetValueAsVector(TEXT("LastKnownLocation"), loc);
 }
 
 void AEnemyCharacter::InvestigateDistraction(AActor* actor)
 {
-	visionCone->SetAlertState(1);
+	visionCone->SetAlertState(EAlertState::ALERT);
 	
-	AEnemyAIController* aiController = Cast<AEnemyAIController>(GetController());
 	if (IsValid(aiController))
-		aiController->SetBBObj(TEXT("Distraction"), actor);
-	
+		aiController->GetBBComp()->SetValueAsObject(TEXT("Distraction"), actor);
+}
+
+void AEnemyCharacter::StartDetection_Implementation(AActor* otherActor)
+{
+	// Chase Player
+	if (IsValid(aiController))
+		aiController->GetBBComp()->SetValueAsObject(TEXT("PlayerRef"), otherActor);
+}
+
+void AEnemyCharacter::EndDetection_Implementation(AActor* otherActor)
+{
+	// Lost track of player
+	if (IsValid(aiController))
+	{
+		aiController->GetBBComp()->SetValueAsVector(TEXT("LastKnownLocation"), otherActor->GetActorLocation());
+		aiController->GetBBComp()->ClearValue(TEXT("PlayerRef"));
+	}
 }

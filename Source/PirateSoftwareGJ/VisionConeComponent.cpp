@@ -3,10 +3,12 @@
 
 #include "VisionConeComponent.h"
 
-#include "EnemyAIController.h"
+#include "DetectionInterface.h"
+#include "PlayerCharacter.h"
 #include "RealtimeMeshComponent.h"
 #include "RealtimeMeshSimple.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 
 static void ConvertToTriangles(TArray<int32>& Triangles, TArray<int32>& MaterialIndices, int32 Vert0, int32 Vert1, int32 Vert2, int32 NewMaterialGroup)
@@ -27,153 +29,183 @@ UVisionConeComponent::UVisionConeComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 	
+	// Get vision cone material interface and store it so we can create dynamic material later.
+	static ConstructorHelpers::FObjectFinder<UMaterialInterface> visionConeMaterial(TEXT("/Game/Materials/VisionCone/MatInst_VisionCone.MatInst_VisionCone"));
+	if (visionConeMaterial.Succeeded())
+		visionConeMaterialInterface = visionConeMaterial.Object;
 }
-
 
 // Called when the game starts
 void UVisionConeComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ACharacter* character = Cast<ACharacter>(GetOwner());
-	if (IsValid(character))
-	{
-		// ...
-		AEnemyAIController* ai = Cast<AEnemyAIController>(character->GetController());
-		if (IsValid(ai))
-		{
-			ai->SetPerceptionRange(distance);
-			ai->SetPerceptionAngle(angle/2.f);
-		}
-	}
+	// Get Player Reference
+	playerRef = Cast<APlayerCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 
+	// Create dynamic material for vision cone.
+	dynamicVisionConeMat = UMaterialInstanceDynamic::Create(visionConeMaterialInterface, this);
 	
-	// Initialize the simple mesh
-	RealtimeMesh = InitializeRealtimeMesh<URealtimeMeshSimple>();
-	
-	// This example create 3 rectangular prisms, one on each axis, with 2 of them grouped in the same vertex buffers, but with different sections
-	// This allows for setting up separate materials even if sections share a single set of buffers
+	// Construct initial simple realtime mesh.
+	ConstructSimpleRTMesh();
 
-	// Setup the two material slots
-	RealtimeMesh->SetupMaterialSlot(0, "PrimaryMaterial");
+	// Update Mesh Every Interval
+	GetWorld()->GetTimerManager().SetTimer(updateMeshTH, this, &UVisionConeComponent::UpdateSimpleRTMesh, 0.16f, true);
 
-	if (IsValid(visionConeMat))
-	{
-		SetMaterial(0, visionConeMat);
-	}
-
-	{	// Create a basic single section
-		
-
-		// This just adds a simple box, you can instead create your own mesh data
-		AppendTriangleMesh(meshData, GetPoints(), 1);
-		
-		// Create a single section, with its own dedicated section group
-
-		SectionGroupKey = FRealtimeMeshSectionGroupKey::Create(0, FName("TestTripleBox"));
-		RealtimeMesh->CreateSectionGroup(SectionGroupKey, meshData);
-
-		auto SectionGroup = RealtimeMesh->GetMeshData()->GetSectionGroupAs<FRealtimeMeshSectionGroupSimple>(SectionGroupKey);
-		SectionGroup->SetPolyGroupSectionHandler(FRealtimeMeshPolyGroupConfigHandler::CreateUObject(this, &UVisionConeComponent::OnAddSectionToPolyGroup));
-
-		FRealtimeMeshSectionConfig VisibleConfig;
-		VisibleConfig.bIsVisible = true;
-
-		RealtimeMesh->UpdateSectionConfig(FRealtimeMeshSectionKey::CreateForPolyGroup(SectionGroupKey, 1), VisibleConfig);
-	}
-	
+	// Update Mesh Every Interval
+	GetWorld()->GetTimerManager().SetTimer(playerDetectionUpdateTH, this, &UVisionConeComponent::PlayerDetection, 0.16f, true);
 }
-
 
 // Called every frame
 void UVisionConeComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	// ...
-
-	TArray<FVector> points = GetPoints();
-
-	for (int i = 0; i < points.Num(); ++i)
-	{
-		meshData.Positions[i] = points[i];
-	}
-
-	RealtimeMesh->UpdateSectionGroup(SectionGroupKey, meshData);
 }
 
-void UVisionConeComponent::SetAlertState(int state)
+void UVisionConeComponent::SetAlertState(EAlertState alertState)
 {
+	// Dynamic material is ded.
+	if (!IsValid(dynamicVisionConeMat))
+		return;
+
+	// Update the color of the dynamic material instance, to match the state.
+	switch (alertState) {
+		
+		case EAlertState::NOTARGET:
+			dynamicVisionConeMat->SetVectorParameterValue(TEXT("Color"), visionConeColor);
+			break;
+			
+		case EAlertState::ALERT:
+			dynamicVisionConeMat->SetVectorParameterValue(TEXT("Color"), visionConeAlertColor);
+			break;
+		
+		case EAlertState::HASTARGET:
+			dynamicVisionConeMat->SetVectorParameterValue(TEXT("Color"), visionConeChaseColor);
+			break;
+
+		default:
+			if (GEngine)
+				GEngine->AddOnScreenDebugMessage(-1, 15, FColor::Red, TEXT("Invalid Alert State."));
+	}
+}
+
+void UVisionConeComponent::SetDisabled(bool bDis)
+{
+	SetHiddenInGame(bDis);
+	bDisabled = bDis;
+}
+
+void UVisionConeComponent::ConstructSimpleRTMesh()
+{
+	// Initialize the simple mesh
+	RealtimeMesh = InitializeRealtimeMesh<URealtimeMeshSimple>();
+
+	// Setup the material slot for the vision cone.
+	RealtimeMesh->SetupMaterialSlot(0, "PrimaryMaterial");
+
+	// Bind the dynamic material we created.
+	if (IsValid(dynamicVisionConeMat))
+	{
+		SetMaterial(0, dynamicVisionConeMat);
+	}
+
+	{	// Create a basic single section
+		
+		// Generate initial cone points.
+		for (int i = 0; i < resolution+1; ++i)
+			conePoints.Add(FVector(0,0,0));	
+		
+		GetPoints(conePoints);
+
+		// Generate and store the vision cones triangle mesh data.
+		AppendTriangleMesh(meshData, 1);
+		
+		// Creates a group for the mesh data (Not sure if needed as we only have one group, but it works i guess).
+		SectionGroupKey = FRealtimeMeshSectionGroupKey::Create(0, FName("VisionCone"));
+		RealtimeMesh->CreateSectionGroup(SectionGroupKey, meshData);
+
+		auto SectionGroup = RealtimeMesh->GetMeshData()->GetSectionGroupAs<FRealtimeMeshSectionGroupSimple>(SectionGroupKey);
+		SectionGroup->SetPolyGroupSectionHandler(FRealtimeMeshPolyGroupConfigHandler::CreateUObject(this, &UVisionConeComponent::OnAddSectionToPolyGroup));
+
+		// Create config for mesh.
+		FRealtimeMeshSectionConfig VisibleConfig;
+		VisibleConfig.bIsVisible = true;
+
+		// Update the mesh with the mesh data we created.
+		RealtimeMesh->UpdateSectionConfig(FRealtimeMeshSectionKey::CreateForPolyGroup(SectionGroupKey, 1), VisibleConfig);
+	}
+}
+
+void UVisionConeComponent::UpdateSimpleRTMesh()
+{
+	if (bDisabled)
+		return;
 	
-	if (IsValid(visionConeMat) && state == 0)
+	// Send out ray casts to get the vision cone shape outline points.
+	if (GetPoints(conePoints))
 	{
-		SetMaterial(0, visionConeMat);
-	}
-	else if (IsValid(visionConeAlertMat) && state == 1)
-	{
-		SetMaterial(0, visionConeAlertMat);
-	}
-	else if (IsValid(visionConeChaseMat) && state == 2)
-	{
-		SetMaterial(0, visionConeChaseMat);
+		// For each outline point, update the vertex point in the mesh data.
+		for (int i = 0; i < conePoints.Num(); ++i)
+			meshData.Positions[i] = conePoints[i];
+
+		// Update 
+		RealtimeMesh->UpdateSectionGroup(SectionGroupKey, meshData);
 	}
 }
 
-
-TArray<FVector> UVisionConeComponent::GetPoints()
+bool UVisionConeComponent::GetPoints(TArray<FVector>& outPoints)
 {
-
-	UVisionConeComponent* visCone = GetOwner()->GetComponentByClass<UVisionConeComponent>();
+	bool bShouldUpdate = false;
 	
 	FHitResult hit;
 
-	TArray<FVector> points;
-
-	const FVector startLoc = visCone->GetComponentLocation();
+	const FVector startLoc = GetComponentLocation();
 	const float angSegment = angle / resolution;
 	float ang = -angle / 2.f;
 
-	points.Add({0,0,0});
-
 	for (int i = 0; i < resolution; ++i)
 	{
-		FVector endLoc = startLoc + (UKismetMathLibrary::RotateAngleAxis(visCone->GetForwardVector(), ang,
-			FVector(0,0,1)) * distance);
+		FVector endLoc = startLoc + (UKismetMathLibrary::RotateAngleAxis(GetForwardVector(), ang,
+			FVector(0,0,1)) * maxRange);
 
 		GetWorld()->LineTraceSingleByChannel(hit, startLoc, endLoc, ECC_Visibility);
 
+		FVector point;
+		
 		if (hit.bBlockingHit)
-		{
-			points.Add(UKismetMathLibrary::InverseTransformLocation(visCone->GetComponentTransform(),hit.Location));
-		}
+			point = UKismetMathLibrary::InverseTransformLocation(GetComponentTransform(),hit.Location);
 		else
+		
+			point = UKismetMathLibrary::InverseTransformLocation(GetComponentTransform(),endLoc);
+		
+		
+		if (point != outPoints[i+1])
 		{
-			points.Add(UKismetMathLibrary::InverseTransformLocation(visCone->GetComponentTransform(),endLoc));
+			outPoints[i+1] = point;
+			bShouldUpdate = true;
 		}
 		
 		ang += angSegment;
 	}
-	return points;
+	return bShouldUpdate;
 }
 
-void UVisionConeComponent::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, TArray<FVector> Points, int32 NewMaterialGroup)
+void UVisionConeComponent::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshData, int32 NewMaterialGroup)
 {
 	// Generate verts
 	TArray<FVector> BoxVerts;
 
-	for (FVector p : Points)
+	for (FVector p : conePoints)
 	{
 		BoxVerts.Add(FTransform::Identity.TransformPosition(p));
 	}
 
-	const int n = Points.Num() - 2;
+	const int n = conePoints.Num() - 2;
 	
 	// Generate triangles (from quads)
 	const int32 StartVertex = MeshData.Positions.Num();
-	const int32 NumVerts = Points.Num(); 
+	const int32 NumVerts = conePoints.Num(); 
 	const int32 NumIndices = n * 3;
 
 	// Make sure the secondary arrays are the same length, zeroing them if necessary
@@ -218,4 +250,54 @@ void UVisionConeComponent::AppendTriangleMesh(FRealtimeMeshSimpleMeshData& MeshD
 FRealtimeMeshSectionConfig UVisionConeComponent::OnAddSectionToPolyGroup(int32 PolyGroupIndex)
 {
 	return FRealtimeMeshSectionConfig(ERealtimeMeshSectionDrawType::Static, PolyGroupIndex);
+}
+
+void UVisionConeComponent::PlayerDetection()
+{
+	if (!IsValid(playerRef) || bDisabled)
+		return;
+
+	// Get the distance to the player.
+	const float distance = FVector::Dist(playerRef->GetActorLocation(), GetComponentLocation());
+
+	// If the player is not cloaked or in the max range.
+	if (!playerRef->GetIsCloaked() && distance < maxRange)
+	{
+		const float componentDP = GetForwardVector().Dot(UKismetMathLibrary::GetDirectionUnitVector(GetComponentLocation(),playerRef->GetActorLocation()));
+
+		// If the player is in peripheral range or is in the angle specified for the max range.
+		if (distance < peripheralRange || acos(componentDP) < FMath::DegreesToRadians(angle/2.f))
+		{
+			SetAlertState(EAlertState::HASTARGET);
+			
+			AActor* owner = GetOwner();
+			if (UKismetSystemLibrary::DoesImplementInterface(owner, UDetectionInterface::StaticClass())) {				
+				IDetectionInterface::Execute_StartDetection(owner, playerRef);
+			}
+
+			bPlayerInRange = true;
+			return;
+		}
+	}
+
+	// If player was previously in range and has left the come inform owner.
+	if (bPlayerInRange)
+	{
+		SetAlertState(EAlertState::ALERT);
+
+		GetWorld()->GetTimerManager().SetTimer(playerLostTH, this, &UVisionConeComponent::PlayerLost, losePlayerTime);
+		
+		AActor* owner = GetOwner();
+		if (UKismetSystemLibrary::DoesImplementInterface(owner, UDetectionInterface::StaticClass())) {				
+			IDetectionInterface::Execute_EndDetection(owner, playerRef);
+		}
+
+		bPlayerInRange = false;
+	}
+	
+}
+
+void UVisionConeComponent::PlayerLost()
+{
+	SetAlertState(EAlertState::NOTARGET);
 }

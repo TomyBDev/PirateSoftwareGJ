@@ -25,7 +25,7 @@ EBTNodeResult::Type UBTTask_ClearNode::ExecuteTask(UBehaviorTreeComponent& Owner
 		
 	UVisionConeComponent* visionCone = enemy->GetVisionConeComponent();
 	if (IsValid(visionCone))
-		visionCone->SetAlertState(0);
+		visionCone->SetAlertState(EAlertState::NOTARGET);
 
 	return EBTNodeResult::Succeeded;
 }

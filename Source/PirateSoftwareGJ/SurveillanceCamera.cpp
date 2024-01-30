@@ -7,8 +7,6 @@
 #include "InteractWidget.h"
 #include "PlayerCharacter.h"
 #include "VisionConeComponent.h"
-#include "Components/ArrowComponent.h"
-#include "Components/BoxComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -33,10 +31,6 @@ ASurveillanceCamera::ASurveillanceCamera()
 void ASurveillanceCamera::BeginPlay()
 {
 	Super::BeginPlay();
-
-	characterRef = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
-
-	GetWorld()->GetTimerManager().SetTimer(detectionTH, this, &ASurveillanceCamera::PlayerCheck, 0.166f, true);
 
 	cameraHead->SetRelativeRotation(FRotator(0.0f, startAngle, 0.0f));
 
@@ -90,7 +84,7 @@ bool ASurveillanceCamera::EndInteraction_Implementation()
 	if (Super::EndInteraction_Implementation())
 		return true;
 	
-	visionCone->SetHiddenInGame(true);
+	visionCone->SetDisabled(true);
 	SetActorTickEnabled(false);
 
 	GetWorld()->GetTimerManager().SetTimer(disabledTH, this, &ASurveillanceCamera::HackOver, disabledTime);
@@ -104,7 +98,6 @@ bool ASurveillanceCamera::InteractionCancelled_Implementation()
 		return true;
 
 	return false;
-	
 }
 
 bool ASurveillanceCamera::LookatBegin_Implementation()
@@ -113,7 +106,6 @@ bool ASurveillanceCamera::LookatBegin_Implementation()
 		return true;
 
 	return false;
-	
 }
 
 bool ASurveillanceCamera::LookatEnd_Implementation()
@@ -122,7 +114,23 @@ bool ASurveillanceCamera::LookatEnd_Implementation()
 		return true;
 
 	return false;
-	
+}
+
+void ASurveillanceCamera::StartDetection_Implementation(AActor* otherActor)
+{
+	for (AEnemyCharacter* e : enemies)
+	{ // TODO pass player location.
+		e->InvestigateCamera(otherActor->GetActorLocation());
+	}
+
+	if(GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, TEXT("Camera Sees Player!"));
+}
+
+void ASurveillanceCamera::EndDetection_Implementation(AActor* otherActor)
+{
+	if(GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, TEXT("Camera can no longer See Player!"));
 }
 
 void ASurveillanceCamera::TurnCamera()
@@ -133,7 +141,7 @@ void ASurveillanceCamera::TurnCamera()
 
 void ASurveillanceCamera::HackOver()
 {
-	visionCone->SetHiddenInGame(false);
+	visionCone->SetDisabled(false);
 	SetActorTickEnabled(true);
 
 	if (IsValid(interactionWidget))
@@ -141,33 +149,6 @@ void ASurveillanceCamera::HackOver()
 		interactionWidget->ZeroPercentage();
 		interactionWidget->SetComplete(false);
 	}
-		
-
+	
 	bLockInteraction = false;
 }
-
-void ASurveillanceCamera::PlayerCheck()
-{
-	if (IsValid(characterRef) && FVector::Dist(characterRef->GetActorLocation(), visionCone->GetComponentLocation()) < visionCone->GetRange())
-	{
-		float thing1 = abs(cameraHead->GetForwardVector().Dot(UKismetMathLibrary::GetDirectionUnitVector(visionCone->GetComponentLocation(),characterRef->GetActorLocation())));
-		float thing2 = visionCone->GetAngle() / 90.f;
-
-		APlayerCharacter* pchar = Cast<APlayerCharacter>(characterRef);
-		
-		if (thing1 < thing2 && IsValid(pchar) && !pchar->GetIsCloaked())
-		{
-			visionCone->SetAlertState(2);
-
-			for (AEnemyCharacter* e : enemies)
-			{
-				e->InvestigateCamera(characterRef->GetActorLocation());
-			}
-			
-			return;
-		}
-	}
-
-	visionCone->SetAlertState(0);
-}
-

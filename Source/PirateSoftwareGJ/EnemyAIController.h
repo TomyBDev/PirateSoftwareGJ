@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "EnemyAIController.generated.h"
 
+class APlayerCharacter;
 struct FAIStimulus;
 /**
  * 
@@ -29,26 +30,16 @@ public:
 	/** Run every frame. */
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION()
-	void OnTargetDetected(AActor* Actor, FAIStimulus const stimulus);
-
-	void SetPerceptionRange(float range);
-
-	void SetPerceptionAngle(float angle);
-
-	void SetBBObj(FName bbName, AActor* actor);
-
-	void SetBBVec(FName bbName, FVector vec);
+	UBlackboardComponent* GetBBComp() { return GetBlackboardComponent(); }
 	
 private:
+
+	/** AI. */
 	
 	UPROPERTY(EditAnywhere)
 	UBehaviorTree* AIBehavior;
 
-	UPROPERTY(EditAnywhere)
-	UAIPerceptionComponent* perceptionComp;
+	/** Misc. */
 
-	UPROPERTY(EditAnywhere)
-	class UAISenseConfig_Sight* sightConfig;
-	
+	APlayerCharacter* playerRef;
 };

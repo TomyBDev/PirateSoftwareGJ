@@ -17,9 +17,6 @@ void UInteractWidget::NativeOnInitialized()
 
 	dynamicRoundProgressMat = UMaterialInstanceDynamic::Create(roundProgressMat, this);
 	roundProgressImage->SetBrushFromMaterial(dynamicRoundProgressMat);
-	
-	if(GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 4.0f, FColor::Green, TEXT("srnetisrntiersatneiartinear starstarstrsw!"));
 }
 
 void UInteractWidget::IncrementPercentage(float per)
