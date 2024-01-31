@@ -49,21 +49,21 @@ void AMainGameModeBase::PlayerWon()
 
 void AMainGameModeBase::DeathTimerComplete()
 {
-	if (IsValid(customGameInstance))
+	if (!IsValid(customGameInstance))
 		return;
 
 	switch (customGameInstance->GetCompletedLevels())
 	{
 	case 1:
-		UGameplayStatics::OpenLevel(GetWorld(), TEXT("p_LevelSelectScreenLevel1"));
+		UGameplayStatics::OpenLevel(GetWorld(), TEXT("p_LevelSelect1"));
 		return;
 
 	case 2:
-		UGameplayStatics::OpenLevel(GetWorld(), TEXT("p_LevelSelectScreenLevel2"));
+		UGameplayStatics::OpenLevel(GetWorld(), TEXT("p_LevelSelect2"));
 		return;
 
 	case 3:
-		UGameplayStatics::OpenLevel(GetWorld(), TEXT("p_LevelSelectScreenLevel3"));
+		UGameplayStatics::OpenLevel(GetWorld(), TEXT("p_LevelSelect3"));
 		return;
 		
 	default:
