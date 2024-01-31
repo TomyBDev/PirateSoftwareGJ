@@ -20,6 +20,8 @@ class PIRATESOFTWAREGJ_API UCustomGameInstance : public UGameInstance
 public:
 	UCustomGameInstance();
 
+	/** Getters. */
+
 	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
 	FGraphicsSettingsStruct GetGraphicsSettings() const { return graphicsSettings; }
 
@@ -30,17 +32,20 @@ public:
 	FAudioSettingsStruct GetAudioSettings() const { return audioSettings; }
 
 	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
-	bool IsLevel1Complete() const { return bLevel1Complete; }
+	uint8 GetCompletedLevels() const { return completeLevels; }
 
-	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
-	bool IsLevel2Complete() const { return bLevel2Complete; }
-
-	UFUNCTION(BlueprintPure, BlueprintInternalUseOnly)
-	bool IsLevel3Complete() const { return bLevel3Complete; }
-
+	uint8 GetCurrentLevel() const { return currentLevel; }
+	
 	bool GetHasLoaded() const { return bHasLoaded; }
 
+	/** Setters. */
+
+	UFUNCTION(BlueprintSetter, BlueprintInternalUseOnly)
+	void SetCurrentLevel(uint8 level) {currentLevel = level; }
+	
 	void SetMenuPCRef(AMenuPlayerController* menuPCRef) { menuPlayerController = menuPCRef; }
+	
+	void SetCompletedLevels(uint8 levels) { completeLevels = levels; }
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,11 +53,15 @@ protected:
 
 private:
 
+	/** Saving. */
+
 	UFUNCTION(BlueprintCallable)
 	void SaveGameData(FGraphicsSettingsStruct graphics, FGeneralSettingsStruct general, FAudioSettingsStruct audio);
 
 	void SaveComplete_Delegate(const FString& slotName, const int32 userIndex, bool bSuccess);
 
+	/** Loading. */
+	
 	void LoadGameData();
 
 	void LoadComplete_Delegate(const FString& SlotName, const int32 UserIndex, USaveGame* LoadedGameData);
@@ -69,18 +78,15 @@ private:
 	UPROPERTY(BlueprintGetter = GetAudioSettings)
 	FAudioSettingsStruct audioSettings;
 
-	UPROPERTY(BlueprintGetter=IsLevel1Complete)
-	bool bLevel1Complete = false;
-
-	UPROPERTY(BlueprintGetter=IsLevel2Complete)
-	bool bLevel2Complete = false;
-
-	UPROPERTY(BlueprintGetter=IsLevel3Complete)
-	bool bLevel3Complete = false;
-
 	UPROPERTY()
 	AMenuPlayerController* menuPlayerController;
 
+	UPROPERTY(BlueprintGetter=GetCompletedLevels)
+	uint8 completeLevels = 0;
+
+	UPROPERTY(BlueprintSetter=SetCurrentLevel)
+	uint8 currentLevel = 1;
+	
 	bool bHasLoaded = false;
 
 };
