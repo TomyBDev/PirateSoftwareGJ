@@ -34,6 +34,10 @@ void ADistraction::Tick(float DeltaTime)
 void ADistraction::TurnOff()
 {
 	distractionAC->SetActive(false);
+	
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15, FColor::Red, TEXT("SetActive(False)."));
+
 }
 
 bool ADistraction::BeginInteraction_Implementation()

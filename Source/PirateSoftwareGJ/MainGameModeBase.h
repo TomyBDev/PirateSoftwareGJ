@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "MainGameModeBase.generated.h"
 
+class UCustomGameInstance;
 /**
  * 
  */
@@ -35,4 +36,6 @@ private:
 	FTimerHandle deathScreenTH;
 
 	float deathScreenTime = 5.f;
+
+	UCustomGameInstance* customGameInstance;
 };
